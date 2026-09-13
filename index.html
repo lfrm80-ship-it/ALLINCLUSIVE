@@ -3,535 +3,1109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offers & Discounts Dashboard - Acceso</title>
+    <title>Aimbridge LATAM — Wyndham Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #212529;
-            margin: 0;
-            padding: 20px;
+        :root {
+            --sidebar-width: 260px;
+            --bg-sidebar: #0b132b;
+            --sidebar-border: #1c2541;
+            --accent-color: #d97706;
+            --border-color: #e5e7eb;
+            --main-bg: #f8f9fa;
         }
 
-        /* Pantalla de Login */
-        #login-container {
-            max-width: 400px;
-            margin: 80px auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        #login-container h2 {
-            margin-bottom: 20px;
-            color: #111827;
-        }
-        .login-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-        .login-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            color: #4b5563;
-            margin-bottom: 5px;
-        }
-        .login-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
+        * {
             box-sizing: border-box;
-        }
-        .error-msg {
-            color: #dc2626;
-            font-size: 12px;
-            margin-bottom: 15px;
-            display: none;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        /* Dashboard principal (Oculto hasta autenticarse) */
-        #app-container {
-            display: none;
-            max-width: 1100px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
+        body {
+            background-color: var(--main-bg);
+            color: #212529;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        h2 {
+
+        /* MENÚ LATERAL */
+        aside {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--sidebar-border);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 16px;
+        }
+
+        .sidebar-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            padding-left: 4px;
+        }
+
+        .wyndham-logo-text {
+            font-family: "Georgia", "Times New Roman", serif;
+            font-weight: bold;
             font-size: 20px;
-            color: #111827;
+            letter-spacing: -0.5px;
+            color: #ffffff;
             margin-bottom: 4px;
         }
-        .subtitle {
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 20px;
-            text-align: right;
+
+        .sidebar-subtitle {
+            font-size: 9px;
+            letter-spacing: 1.2px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-top: 4px;
         }
-        .filter-section {
-            border: 1px solid #e5e7eb;
+
+        .lang-selector {
+            display: flex;
+            gap: 4px;
+            margin-top: 10px;
+        }
+
+        .lang-btn {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #cbd5e1;
+            padding: 2px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .lang-btn.active {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-grow: 1;
+        }
+
+        .menu-item {
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #cbd5e1;
             border-radius: 6px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: #1e293b;
+            color: #ffffff;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid var(--sidebar-border);
+            padding-top: 15px;
+        }
+
+        .session-info {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .btn-session {
+            width: 100%;
+            padding: 9px;
+            border-radius: 6px;
+            border: none;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-login-side {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .btn-logout-side {
+            background: #dc2626;
+            color: white;
+            display: none;
+        }
+
+        /* CONTENIDO PRINCIPAL CENTRADO */
+        main {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .content-wrapper {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: #0f172a;
+            margin: 0 0 5px 0;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 20px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .tier-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .tier-card:hover {
+            border-color: #94a3b8;
+        }
+
+        .tier-card.active {
+            border: 2px solid #2563eb;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
+        }
+
+        .tier-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .tier-value {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 20px;
+        }
+
+        .panel-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .benefit-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .benefit-item {
+            font-size: 13px;
+            color: #334155;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+
+        .benefit-item span {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+        }
+
+        /* FILTROS AVANZADOS TIPO PÍLDORA */
+        .filter-panel {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
             background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.01);
+        }
+
+        .filter-row {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 10px;
         }
+
         .filter-label {
             font-size: 11px;
             font-weight: 700;
             color: #4b5563;
+            width: 130px;
             letter-spacing: 0.5px;
-            width: 110px;
         }
+
         .pill-group {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
         }
+
         .pill {
-            padding: 4px 12px;
+            padding: 5px 12px;
             font-size: 12px;
             border-radius: 16px;
             border: 1px solid #d1d5db;
             background: #fff;
             color: #374151;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.15s ease;
         }
+
+        .pill:hover {
+            border-color: #9ca3af;
+            background: #f9fafb;
+        }
+
         .pill.active {
             background: #0f172a;
             color: #fff;
             border-color: #0f172a;
-            font-weight: 500;
-        }
-        .chart-container {
-            position: relative;
-            height: 380px;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .legend-custom {
-            display: flex;
-            justify-content: flex-end;
-            gap: 20px;
-            font-size: 12px;
-            margin-top: 10px;
-            color: #4b5563;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .legend-line {
-            width: 16px;
-            height: 3px;
         }
 
-        /* Sección de Gestión (CRUD) */
-        .management-section {
-            margin-top: 30px;
-            border-top: 2px solid #e5e7eb;
-            padding-top: 24px;
-        }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .form-group label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #4b5563;
-        }
-        .form-group input, .form-group select {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 13px;
-        }
-        .btn-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 8px 16px;
-            font-size: 13px;
-            font-weight: 500;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-primary { background: #0f172a; color: #fff; width: 100%; }
-        .btn-primary:hover { background: #1e293b; }
-        .btn-action { background: #0f172a; color: #fff; }
-        .btn-action:hover { background: #1e293b; }
-        .btn-success { background: #059669; color: #fff; }
-        .btn-success:hover { background: #047857; }
-        .btn-secondary { background: #4b5563; color: #fff; }
-        .btn-secondary:hover { background: #374151; }
-
-        /* Tabla de registros */
         .table-responsive {
             overflow-x: auto;
+            margin-top: 15px;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
             text-align: left;
         }
+
         th, td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
         }
+
         th {
             background-color: #f9fafb;
             font-weight: 600;
             color: #374151;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
         }
-        tr:hover { background-color: #f8fafc; }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .management-section {
+            margin-top: 25px;
+            border-top: 2px solid var(--border-color);
+            padding-top: 20px;
+            display: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #4b5563;
+        }
+
+        .form-group input, .form-group select {
+            padding: 8px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-action { background: #0f172a; color: #fff; }
+        .btn-success { background: #059669; color: #fff; }
+        .btn-pdf { background: #dc2626; color: #fff; }
+        .btn-secondary { background: #4b5563; color: #fff; }
+
+        /* MODAL LOGIN */
+        #loginModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            width: 320px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .login-group {
+            margin-bottom: 15px;
+        }
+
+        .login-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #4b5563;
+            margin-bottom: 5px;
+        }
+
+        .login-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            box-sizing: border-box;
+        }
+
+        .error-msg {
+            color: #dc2626;
+            font-size: 11px;
+            margin-bottom: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-<!-- PANTALLA DE LOGIN -->
-<div id="login-container">
-    <h2>🔒 Acceso Restringido</h2>
-    <p style="font-size: 13px; color: #6b7280; margin-bottom: 20px;">Ingresa tus credenciales para ver el panel de promociones.</p>
-    <div class="login-group">
-        <label>Usuario</label>
-        <input type="text" id="userInput" placeholder="Ej. admin">
-    </div>
-    <div class="login-group">
-        <label>Contraseña</label>
-        <input type="password" id="passInput" placeholder="••••••••">
-    </div>
-    <div id="errorMsg" class="error-msg">Usuario o contraseña incorrectos.</div>
-    <button class="btn btn-primary" onclick="verificarLogin()">Entrar</button>
-</div>
-
-<!-- DASHBOARD PRINCIPAL (OCULTO INICIALMENTE) -->
-<div id="app-container">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>Offers & discounts — discount pace</h2>
-        <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="cerrarSesion()">Cerrar Sesión</button>
-    </div>
-    <div class="subtitle">Each line = one offer across its booking window &nbsp;•&nbsp; red = launched inside the travel month</div>
-
-    <!-- TRAVEL PERIOD -->
-    <div class="filter-section">
-        <span class="filter-label">TRAVEL PERIOD</span>
-        <div class="pill-group">
-            <button class="pill">Travel 2025</button>
-            <button class="pill active">Travel 2026</button>
-            <button class="pill">Full year</button>
-            <button class="pill active">Jan</button>
-            <button class="pill">Feb</button>
-            <button class="pill">Mar</button>
-            <button class="pill">Apr</button>
-            <button class="pill">May</button>
-            <button class="pill">Jun</button>
-            <button class="pill">Jul</button>
-            <button class="pill">Aug</button>
-            <button class="pill">Sep</button>
-            <button class="pill">Oct</button>
-            <button class="pill">Nov</button>
-            <button class="pill">Dec</button>
-        </div>
-    </div>
-
-    <!-- PERIOD -->
-    <div class="filter-section">
-        <span class="filter-label">PERIOD</span>
-        <div class="pill-group">
-            <button class="pill active">Full month</button>
-            <button class="pill">1–2 Jan · Festive</button>
-            <button class="pill">3–4 Jan</button>
-            <button class="pill">5–8 Jan</button>
-            <button class="pill">9–31 Jan</button>
-        </div>
-    </div>
-
-    <!-- MARKET -->
-    <div class="filter-section">
-        <span class="filter-label">MARKET</span>
-        <div class="pill-group">
-            <button class="pill">CANADA</button>
-            <button class="pill">EUROPE</button>
-            <button class="pill">LATAM</button>
-            <button class="pill">MEXICO</button>
-            <button class="pill">ONLINE</button>
-            <button class="pill active">USA</button>
-        </div>
-    </div>
-
-    <!-- METRIC -->
-    <div class="filter-section">
-        <span class="filter-label">METRIC</span>
-        <div class="pill-group">
-            <button class="pill active">Discount %</button>
-            <button class="pill">ADR (USD)</button>
-        </div>
-    </div>
-
-    <!-- LEYENDA SUPERIOR GRÁFICA -->
-    <div class="legend-custom">
-        <div class="legend-item"><div class="legend-line" style="background: #1e293b;"></div> USA</div>
-        <div class="legend-item"><div class="legend-line" style="background: #b91c1c;"></div> launched in travel month</div>
-    </div>
-
-    <!-- GRÁFICO -->
-    <div class="chart-container">
-        <canvas id="discountChart"></canvas>
-    </div>
-
-    <!-- SECCIÓN DE GESTIÓN (AGREGAR / MODIFICAR / CONSULTAR / DESCARGAR) -->
-    <div class="management-section">
-        <h2>Gestión de Promociones</h2>
-        <p class="subtitle" style="text-align: left;">Agrega, edita o consulta registros y expórtalos cuando lo necesites.</p>
-        
-        <!-- Formulario de Registro -->
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Nombre de Promo</label>
-                <input type="text" id="promoName" placeholder="Ej. Promo 6">
-            </div>
-            <div class="form-group">
-                <label>Fecha Inicio (Booking)</label>
-                <input type="date" id="promoStart">
-            </div>
-            <div class="form-group">
-                <label>Fecha Fin (Booking)</label>
-                <input type="date" id="promoEnd">
-            </div>
-            <div class="form-group">
-                <label>Descuento (%) o Valor</label>
-                <input type="number" id="promoValue" placeholder="Ej. 25">
-            </div>
-            <div class="form-group">
-                <label>Tipo / Color</label>
-                <select id="promoType">
-                    <option value="Blue">USA (Regular)</option>
-                    <option value="Red">Launched in Travel Month</option>
-                </select>
+<!-- MENÚ LATERAL IZQUIERDO -->
+<aside>
+    <div>
+        <div class="sidebar-header">
+            <!-- LOGOTIPO CORPORATIVO -->
+            <div class="wyndham-logo-text">Wyndham</div>
+            <div id="lblSubPanel" class="sidebar-subtitle">Panel Comercial & Soporte</div>
+            <div class="lang-selector">
+                <button id="btnLangEsp" class="lang-btn active" onclick="setLanguage('es')">ESP</button>
+                <button id="btnLangEng" class="lang-btn" onclick="setLanguage('en')">ENG</button>
             </div>
         </div>
 
-        <!-- Botones de Acción -->
-        <div class="btn-container">
-            <button class="btn btn-action" onclick="addOrUpdatePromo()">Guardar / Agregar</button>
-            <button class="btn btn-secondary" onclick="clearForm()">Limpiar Campos</button>
-            <button class="btn btn-success" onclick="exportToExcel()">📥 Descargar Excel (CSV)</button>
-            <button class="btn btn-secondary" onclick="exportToPDF()">🖨️ Imprimir / Guardar PDF</button>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item" id="menuRewards" onclick="switchMainTab('rewards', this)">Wyndham Rewards</a>
+            <a href="#" class="menu-item" id="menuPromos" onclick="switchMainTab('promos', this)">Promociones</a>
+            <a href="#" class="menu-item active" id="menuTickets" onclick="switchMainTab('tickets', this)">Wyndham Tickets</a>
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <div id="sessionStatusText" class="session-info">Modo consulta pública</div>
+        <button id="btnLoginSide" class="btn btn-session btn-login-side" onclick="abrirModalLogin()">🔑 Acceso Edición (Admin)</button>
+        <button id="btnLogoutSide" class="btn btn-session btn-logout-side" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+</aside>
+
+<!-- CONTENIDO PRINCIPAL CENTRADO -->
+<main>
+    <div class="content-wrapper">
+        <!-- VISTA 1: WYNDHAM REWARDS -->
+        <div id="view-rewards" class="tab-content">
+            <h1 id="rewardsTitle">Wyndham Rewards - Member Levels & Benefits</h1>
+            <div id="rewardsDesc" class="section-desc">Explora las ventajas por nivel de membresía y el rendimiento comercial de la cartera de miembros Wyndham Rewards.</div>
+
+            <div class="cards-grid">
+                <div class="tier-card active" onclick="selectTier('blue', this)">
+                    <div class="tier-title">BLUE</div>
+                    <div id="cardBlueSub" class="tier-value">0 Noches / Registro</div>
+                </div>
+                <div class="tier-card" onclick="selectTier('gold', this)">
+                    <div class="tier-title">GOLD</div>
+                    <div id="cardGoldSub" class="tier-value">5 Noches Cualificadas</div>
+                </div>
+                <div class="tier-card" onclick="selectTier('platinum', this)">
+                    <div class="tier-title">PLATINUM</div>
+                    <div id="cardPlatinumSub" class="tier-value">15 Noches Cualificadas</div>
+                </div>
+                <div class="tier-card" onclick="selectTier('diamond', this)">
+                    <div class="tier-title">DIAMOND</div>
+                    <div id="cardDiamondSub" class="tier-value">40 Noches Cualificadas</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="panel-box">
+                    <div id="benefitTitle" class="panel-title">Nivel BLUE - Beneficios Básicos</div>
+                    <ul id="benefitList" class="benefit-list">
+                        <li class="benefit-item"><span>✓</span> 10 puntos por dólar o 1,000 puntos en estadías calificadas</li>
+                        <li class="benefit-item"><span>✓</span> Wi-Fi gratuito en todas las propiedades All Inclusive</li>
+                        <li class="benefit-item"><span>✓</span> Rollover Nights (Noches acumulables para el siguiente año)</li>
+                    </ul>
+                </div>
+
+                <div class="panel-box">
+                    <div id="chartBoxTitle" class="panel-title">Penetración de Reservas por Nivel de Socio</div>
+                    <div class="chart-container">
+                        <canvas id="penetrationChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Tabla de Consulta -->
-        <div class="table-responsive">
-            <table id="promosTable">
-                <thead>
-                    <tr>
-                        <th>Promo</th>
-                        <th>Inicio Reserva</th>
-                        <th>Fin Reserva</th>
-                        <th>Descuento</th>
-                        <th>Categoría</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- Registros dinámicos -->
-                </tbody>
-            </table>
+        <!-- VISTA 2: PROMOCIONES -->
+        <div id="view-promos" class="tab-content">
+            <h1>Offers & discounts — discount pace</h1>
+            <div class="section-desc">Each line = one offer across its booking window • red = launched inside the travel month • season slices from the offers file</div>
+
+            <div class="filter-panel">
+                <div class="filter-row">
+                    <span class="filter-label">TRAVEL PERIOD</span>
+                    <div class="pill-group" id="groupYear">
+                        <button class="pill" onclick="filterBy('year', 'Travel 2025', this)">Travel 2025</button>
+                        <button class="pill active" onclick="filterBy('year', 'Travel 2026', this)">Travel 2026</button>
+                        <button class="pill" onclick="filterBy('year', 'Full year', this)">Full year</button>
+                    </div>
+                    <div class="pill-group" id="groupMonth">
+                        <button class="pill active" onclick="filterBy('month', 'Jan', this)">Jan</button>
+                        <button class="pill" onclick="filterBy('month', 'Feb', this)">Feb</button>
+                        <button class="pill" onclick="filterBy('month', 'Mar', this)">Mar</button>
+                        <button class="pill" onclick="filterBy('month', 'Apr', this)">Apr</button>
+                        <button class="pill" onclick="filterBy('month', 'May', this)">May</button>
+                        <button class="pill" onclick="filterBy('month', 'Jun', this)">Jun</button>
+                        <button class="pill" onclick="filterBy('month', 'Jul', this)">Jul</button>
+                        <button class="pill" onclick="filterBy('month', 'Aug', this)">Aug</button>
+                        <button class="pill" onclick="filterBy('month', 'Sep', this)">Sep</button>
+                        <button class="pill" onclick="filterBy('month', 'Oct', this)">Oct</button>
+                        <button class="pill" onclick="filterBy('month', 'Nov', this)">Nov</button>
+                        <button class="pill" onclick="filterBy('month', 'Dec', this)">Dec</button>
+                    </div>
+                </div>
+
+                <div class="filter-row">
+                    <span class="filter-label">PERIOD SLICE</span>
+                    <div class="pill-group" id="groupSlice">
+                        <button class="pill active" onclick="filterBy('slice', 'Full month', this)">Full month</button>
+                        <button class="pill" onclick="filterBy('slice', '1–2 Jan · Festive', this)">1–2 Jan · Festive</button>
+                        <button class="pill" onclick="filterBy('slice', '3–4 Jan', this)">3–4 Jan</button>
+                        <button class="pill" onclick="filterBy('slice', '5–8 Jan', this)">5–8 Jan</button>
+                        <button class="pill" onclick="filterBy('slice', '9–31 Jan', this)">9–31 Jan</button>
+                    </div>
+                </div>
+
+                <div class="filter-row">
+                    <span class="filter-label">MARKET / COMPARE</span>
+                    <div class="pill-group" id="groupMarket">
+                        <button class="pill" onclick="filterBy('market', 'CANADA', this)">CANADA</button>
+                        <button class="pill" onclick="filterBy('market', 'EUROPE', this)">EUROPE</button>
+                        <button class="pill" onclick="filterBy('market', 'LATAM', this)">LATAM</button>
+                        <button class="pill" onclick="filterBy('market', 'MEXICO', this)">MEXICO</button>
+                        <button class="pill" onclick="filterBy('market', 'ONLINE', this)">ONLINE</button>
+                        <button class="pill active" onclick="filterBy('market', 'USA', this)">USA</button>
+                    </div>
+                    <div style="margin-left: auto; display: flex; gap: 6px; align-items: center;">
+                        <span style="font-size: 11px; font-weight: 700; color: #4b5563;">COMPARE WITH:</span>
+                        <button class="pill active" id="btnCompareOff" onclick="toggleCompare('Off', this)">Off</button>
+                        <button class="pill" onclick="toggleCompare('CANADA', this)">CANADA</button>
+                        <button class="pill" onclick="toggleCompare('EUROPE', this)">EUROPE</button>
+                        <button class="pill" onclick="toggleCompare('LATAM', this)">LATAM</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+                <h2 id="tableSectionTitle" style="font-size: 16px; margin: 0;">Listado de Promociones</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btnExport" class="btn btn-success" onclick="exportToExcel('promos')">📥 Descargar Excel</button>
+                    <button id="btnExportPdf" class="btn btn-pdf" onclick="exportToPdf('promos')">📄 Descargar PDF</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th id="thPromo">Promo</th>
+                            <th id="thStart">Inicio Reserva</th>
+                            <th id="thEnd">Fin Reserva</th>
+                            <th id="thDiscount">Descuento</th>
+                            <th id="thMarketCol">Mercado</th>
+                            <th id="thType">Categoría / Pace</th>
+                            <th class="admin-col" id="thActions" style="display:none;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="managementSection" class="management-section">
+                <h3 id="adminPanelTitle" style="color: #d97706; margin-top: 0;">Panel de Edición y Control</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label id="lblPromoName">Nombre de Promo</label>
+                        <input type="text" id="promoName" placeholder="Ej. Promo 6">
+                    </div>
+                    <div class="form-group">
+                        <label id="lblPromoStart">Fecha Inicio</label>
+                        <input type="date" id="promoStart">
+                    </div>
+                    <div class="form-group">
+                        <label id="lblPromoEnd">Fecha Fin</label>
+                        <input type="date" id="promoEnd">
+                    </div>
+                    <div class="form-group">
+                        <label id="lblPromoValue">Descuento (%)</label>
+                        <input type="number" id="promoValue" placeholder="Ej. 25">
+                    </div>
+                    <div class="form-group">
+                        <label id="lblPromoMarket">Mercado</label>
+                        <select id="promoMarket">
+                            <option value="USA">USA</option>
+                            <option value="CANADA">CANADA</option>
+                            <option value="EUROPE">EUROPE</option>
+                            <option value="LATAM">LATAM</option>
+                            <option value="MEXICO">MEXICO</option>
+                            <option value="ONLINE">ONLINE</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label id="lblPromoType">Tipo / Pace</label>
+                        <select id="promoType">
+                            <option value="Blue">USA (Regular)</option>
+                            <option value="Red">Launched in Travel Month</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="btnSavePromo" class="btn btn-action" onclick="addOrUpdatePromo()">Guardar / Agregar Cambios</button>
+                <button id="btnClearForm" class="btn btn-secondary" onclick="clearForm()">Limpiar Campos</button>
+            </div>
+        </div>
+
+        <!-- VISTA 3: WYNDHAM TICKETS (Activa por defecto) -->
+        <div id="view-tickets" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <div>
+                    <h1 id="ticketsTitle">Wyndham Tickets — Access Management</h1>
+                    <div id="ticketsDesc" class="section-desc">Incident control, support tickets, and operational reports.</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-success" onclick="exportToExcel('tickets')">📊 Excel Tickets</button>
+                    <button class="btn btn-pdf" onclick="exportToPdf('tickets')">📄 PDF Tickets</button>
+                </div>
+            </div>
+
+            <div id="ticketsBoxText" style="background-color: #ffffff; border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 6px; font-size: 0.85rem; color: #212529; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                Tickets module active and synchronized with the property network.
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th id="thTicketId">Ticket ID</th>
+                            <th id="thTicketProp">Property / Hotel</th>
+                            <th id="thTicketIssue">Incident / Issue</th>
+                            <th id="thTicketStatus">Status</th>
+                            <th class="admin-col-tickets" id="thTicketActions" style="display:none;">Edit / Extension</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticketsTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- SECCIÓN DE GESTIÓN DE TICKETS (ADMIN) -->
+            <div id="ticketsManagementSection" class="management-section">
+                <h3 style="color: #d97706; margin-top: 0;" id="ticketAdminTitle">Ticket Administration & Extension Panel</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label id="lblTicketHotel">Property / Hotel</label>
+                        <input type="text" id="ticketHotelInput" placeholder="Ej. Wyndham Cancún">
+                    </div>
+                    <div class="form-group">
+                        <label id="lblTicketReason">Incident / Issue</label>
+                        <input type="text" id="ticketReasonInput" placeholder="Ej. Falla en pasarela CRS">
+                    </div>
+                    <div class="form-group">
+                        <label id="lblTicketExtDate">New Deadline / Extension</label>
+                        <input type="date" id="ticketExtDateInput">
+                    </div>
+                    <div class="form-group">
+                        <label id="lblTicketStatusSelect">Status</label>
+                        <select id="ticketStatusSelect">
+                            <option value="Activo">Activo / En Proceso</option>
+                            <option value="Extendido">Extendido / Prórroga</option>
+                            <option value="Resuelto">Resuelto</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-action" id="btnSaveTicket" onclick="addOrUpdateTicket()">Registrar / Extender Ticket</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- MODAL DE LOGIN -->
+<div id="loginModal">
+    <div class="modal-content">
+        <h3 id="modalLoginTitle" style="margin-top:0; font-size: 16px;">🔒 Administrator Access</h3>
+        <p id="modalLoginDesc" style="font-size: 12px; color: #6b7280;">Ingresa tu contraseña para habilitar la edición.</p>
+        <div class="login-group">
+            <label id="modalUserLabel">Usuario</label>
+            <input type="text" id="userInput" placeholder="admin">
+        </div>
+        <div class="login-group">
+            <label id="modalPassLabel">Contraseña</label>
+            <input type="password" id="passInput" placeholder="••••••••">
+        </div>
+        <div id="errorMsg" class="error-msg">Usuario o contraseña incorrectos.</div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            <button id="modalBtnCancel" class="btn btn-secondary" style="padding: 6px 12px; font-size:12px;" onclick="cerrarModalLogin()">Cancelar</button>
+            <button id="modalBtnEnter" class="btn btn-action" style="padding: 6px 12px; font-size:12px;" onclick="verificarLogin()">Entrar</button>
         </div>
     </div>
 </div>
 
 <script>
-    // CREDENCIALES DE ACCESO
     const USER_CORRECTO = "admin";
-    const PASS_CORRECTO = "2026";
+    const PASS_CORRECTO = "wyndham2026";
+    let isAdmin = false;
+    let currentLang = 'en'; // Inglés por defecto acorde a la vista de tickets inicial
+    let penetrationChart;
+    let currentTierSelected = 'blue';
+
+    let activeFilterYear = 'Travel 2026';
+    let activeFilterMonth = 'Jan';
+    let activeFilterSlice = 'Full month';
+    let activeFilterMarket = 'USA';
+    let activeCompareMarket = 'Off';
+
+    let promoData = [
+        { id: 1, name: 'Promo 1', start: '2026-01-02', end: '2026-01-15', value: 18, market: 'USA', year: 'Travel 2026', month: 'Jan', slice: '9–31 Jan', type: 'Blue' },
+        { id: 2, name: 'Promo 2', start: '2026-01-01', end: '2026-01-05', value: 28, market: 'USA', year: 'Travel 2026', month: 'Jan', slice: '1–2 Jan · Festive', type: 'Red' },
+        { id: 3, name: 'Promo 3', start: '2026-01-10', end: '2026-01-20', value: 35, market: 'LATAM', year: 'Travel 2026', month: 'Jan', slice: '9–31 Jan', type: 'Blue' },
+        { id: 4, name: 'Promo 4', start: '2025-12-01', end: '2025-12-31', value: 32, market: 'CANADA', year: 'Travel 2025', month: 'Dec', slice: 'Full month', type: 'Red' },
+        { id: 5, name: 'Promo 5', start: '2026-01-03', end: '2026-01-12', value: 40, market: 'EUROPE', year: 'Travel 2026', month: 'Jan', slice: '3–4 Jan', type: 'Blue' }
+    ];
+
+    let ticketsData = [
+        { id: 'T-101', hotel: 'Wyndham Alltra Cancún', issue: 'Sincronización de tarifas SynXis CRS', status: 'Activo' },
+        { id: 'T-102', hotel: 'Ramada by Wyndham Playa del Carmen', issue: 'Actualización inventario OPERA PMS', status: 'Extendido' },
+        { id: 'T-103', hotel: 'Wyndham Garden Mexico City', issue: 'Revisión paridad de canales Lighthouse', status: 'Activo' }
+    ];
+
+    const translations = {
+        es: {
+            subPanel: "Panel Comercial & Soporte",
+            menuRewards: "Wyndham Rewards",
+            menuPromos: "Promociones",
+            menuTickets: "Wyndham Tickets",
+            publicStatus: "Modo consulta pública",
+            adminStatus: "🔓 Modo Edición Activo",
+            btnLogin: "🔑 Acceso Edición (Admin)",
+            btnLogout: "Cerrar Sesión",
+            tableTitle: "Listado de Promociones",
+            btnExport: "📥 Descargar Excel",
+            btnExportPdf: "📄 Descargar PDF",
+            thPromo: "Promo",
+            thStart: "Inicio Reserva",
+            thEnd: "Fin Reserva",
+            thDiscount: "Descuento",
+            thMarketCol: "Mercado",
+            thType: "Categoría / Pace",
+            thActions: "Acciones",
+            adminPanelTitle: "Panel de Edición y Control",
+            ticketsTitle: "Wyndham Tickets — Gestión de Accesos",
+            ticketsDesc: "Control de incidencias, tickets de soporte y reportes operativos.",
+            ticketsBoxText: "Módulo de tickets activo y sincronizado con la red de propiedades.",
+            thTicketId: "ID Ticket",
+            thTicketProp: "Propiedad / Hotel",
+            thTicketIssue: "Incidencia / Motivo",
+            thTicketStatus: "Estatus",
+            thTicketActions: "Edición / Extensión",
+            ticketAdminTitle: "Panel de Administración y Extensión de Tickets",
+            modalTitle: "🔒 Acceso de Administrador",
+            modalDesc: "Ingresa tu contraseña para habilitar la edición.",
+            errorLogin: "Usuario o contraseña incorrectos."
+        },
+        en: {
+            subPanel: "Commercial & Support Panel",
+            menuRewards: "Wyndham Rewards",
+            menuPromos: "Promotions",
+            menuTickets: "Wyndham Tickets",
+            publicStatus: "Public view mode",
+            adminStatus: "🔓 Edit Mode Active",
+            btnLogin: "🔑 Edit Access (Admin)",
+            btnLogout: "Sign Out",
+            tableTitle: "Promotions List",
+            btnExport: "📥 Download Excel",
+            btnExportPdf: "📄 Download PDF",
+            thPromo: "Promo",
+            thStart: "Booking Start",
+            thEnd: "Booking End",
+            thDiscount: "Discount",
+            thMarketCol: "Market",
+            thType: "Category / Pace",
+            thActions: "Actions",
+            adminPanelTitle: "Editing & Control Panel",
+            ticketsTitle: "Wyndham Tickets — Access Management",
+            ticketsDesc: "Incident control, support tickets, and operational reports.",
+            ticketsBoxText: "Tickets module active and synchronized with the property network.",
+            thTicketId: "Ticket ID",
+            thTicketProp: "Property / Hotel",
+            thTicketIssue: "Incident / Issue",
+            thTicketStatus: "Status",
+            thTicketActions: "Edit / Extension",
+            ticketAdminTitle: "Ticket Administration & Extension Panel",
+            modalTitle: "🔒 Administrator Access",
+            modalDesc: "Enter your password to enable editing.",
+            errorLogin: "Incorrect username or password."
+        }
+    };
+
+    window.onload = function() {
+        renderPenetrationChart();
+        renderTable();
+        renderTicketsTable();
+        selectTier('blue', document.querySelector('.tier-card'));
+        setLanguage('en'); // Configura el idioma por defecto inicial
+    };
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        document.getElementById('btnLangEsp').classList.toggle('active', lang === 'es');
+        document.getElementById('btnLangEng').classList.toggle('active', lang === 'en');
+
+        const t = translations[lang];
+        document.getElementById('lblSubPanel').innerText = t.subPanel;
+        document.getElementById('menuRewards').innerText = t.menuRewards;
+        document.getElementById('menuPromos').innerText = t.menuPromos;
+        document.getElementById('menuTickets').innerText = t.menuTickets;
+        document.getElementById('sessionStatusText').innerText = isAdmin ? t.adminStatus : t.publicStatus;
+        document.getElementById('btnLoginSide').innerText = t.btnLogin;
+        document.getElementById('btnLogoutSide').innerText = t.btnLogout;
+
+        document.getElementById('tableSectionTitle').innerText = t.tableTitle;
+        document.getElementById('thPromo').innerText = t.thPromo;
+        document.getElementById('thStart').innerText = t.thStart;
+        document.getElementById('thEnd').innerText = t.thEnd;
+        document.getElementById('thDiscount').innerText = t.thDiscount;
+        document.getElementById('thMarketCol').innerText = t.thMarketCol;
+        document.getElementById('thType').innerText = t.thType;
+        document.getElementById('thActions').innerText = t.thActions;
+        document.getElementById('adminPanelTitle').innerText = t.adminPanelTitle;
+
+        document.getElementById('ticketsTitle').innerText = t.ticketsTitle;
+        document.getElementById('ticketsDesc').innerText = t.ticketsDesc;
+        document.getElementById('ticketsBoxText').innerText = t.ticketsBoxText;
+        document.getElementById('thTicketId').innerText = t.thTicketId;
+        document.getElementById('thTicketProp').innerText = t.thTicketProp;
+        document.getElementById('thTicketIssue').innerText = t.thTicketIssue;
+        document.getElementById('thTicketStatus').innerText = t.thTicketStatus;
+        document.getElementById('thTicketActions').innerText = t.thTicketActions;
+        document.getElementById('ticketAdminTitle').innerText = t.ticketAdminTitle;
+
+        document.getElementById('modalLoginTitle').innerText = t.modalTitle;
+        document.getElementById('modalLoginDesc').innerText = t.modalDesc;
+        document.getElementById('errorMsg').innerText = t.errorLogin;
+    }
+
+    function switchMainTab(tabName, element) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+        document.getElementById('view-' + tabName).classList.add('active');
+        element.classList.add('active');
+
+        if(tabName === 'rewards' && penetrationChart) {
+            setTimeout(() => penetrationChart.resize(), 50);
+        }
+    }
+
+    function selectTier(tier, element) {
+        currentTierSelected = tier;
+        document.querySelectorAll('.tier-card').forEach(card => card.classList.remove('active'));
+        if(element) element.classList.add('active');
+    }
+
+    function filterBy(category, value, btnElement) {
+        const container = btnElement.parentElement;
+        container.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        btnElement.classList.add('active');
+
+        if(category === 'year') activeFilterYear = value;
+        if(category === 'month') activeFilterMonth = value;
+        if(category === 'slice') activeFilterSlice = value;
+        if(category === 'market') activeFilterMarket = value;
+
+        renderTable();
+    }
+
+    function toggleCompare(marketVal, btnElement) {
+        const container = btnElement.parentElement;
+        container.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+        btnElement.classList.add('active');
+        activeCompareMarket = marketVal;
+        renderTable();
+    }
+
+    function renderPenetrationChart() {
+        const ctx = document.getElementById('penetrationChart').getContext('2d');
+        penetrationChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Blue', 'Gold', 'Platinum', 'Diamond'],
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: ['#0284c7', '#d97706', '#64748b', '#0f172a'],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { min: 0, max: 50, ticks: { stepSize: 10 } } }
+            }
+        });
+    }
+
+    function abrirModalLogin() {
+        document.getElementById('userInput').value = '';
+        document.getElementById('passInput').value = '';
+        document.getElementById('errorMsg').style.display = 'none';
+        document.getElementById('loginModal').style.display = 'flex';
+    }
+
+    function cerrarModalLogin() {
+        document.getElementById('loginModal').style.display = 'none';
+    }
 
     function verificarLogin() {
-        const u = document.getElementById('userInput').value;
-        const p = document.getElementById('passInput').value;
+        const u = document.getElementById('userInput').value.trim();
+        const p = document.getElementById('passInput').value.trim();
         const error = document.getElementById('errorMsg');
 
         if (u === USER_CORRECTO && p === PASS_CORRECTO) {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('app-container').style.display = 'block';
-            initDashboard();
+            isAdmin = true;
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('btnLoginSide').style.display = 'none';
+            document.getElementById('btnLogoutSide').style.display = 'block';
+            document.getElementById('sessionStatusText').innerText = translations[currentLang].adminStatus;
+            document.getElementById('sessionStatusText').style.color = "#16a34a";
+            
+            document.getElementById('managementSection').style.display = 'block';
+            document.getElementById('ticketsManagementSection').style.display = 'block';
+            document.querySelectorAll('.admin-col').forEach(el => el.style.display = 'table-cell');
+            document.querySelectorAll('.admin-col-tickets').forEach(el => el.style.display = 'table-cell');
+            
+            renderTable();
+            renderTicketsTable();
         } else {
             error.style.display = 'block';
         }
     }
 
     function cerrarSesion() {
-        document.getElementById('userInput').value = '';
-        document.getElementById('passInput').value = '';
-        document.getElementById('errorMsg').style.display = 'none';
-        document.getElementById('app-container').style.display = 'none';
-        document.getElementById('login-container').style.display = 'block';
+        isAdmin = false;
+        document.getElementById('btnLoginSide').style.display = 'block';
+        document.getElementById('btnLogoutSide').style.display = 'none';
+        document.getElementById('sessionStatusText').innerText = translations[currentLang].publicStatus;
+        document.getElementById('sessionStatusText').style.color = "#94a3b8";
+        
+        document.getElementById('managementSection').style.display = 'none';
+        document.getElementById('ticketsManagementSection').style.display = 'none';
+        document.querySelectorAll('.admin-col').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.admin-col-tickets').forEach(el => el.style.display = 'none');
+        
+        renderTable();
+        renderTicketsTable();
     }
 
-    // Base de datos local simulada en memoria
-    let promoData = [
-        { id: 1, name: 'Promo 1', start: '2025-10-19', end: '2025-11-15', value: 18, type: 'Blue' },
-        { id: 2, name: 'Promo 2', start: '2025-11-15', end: '2025-11-28', value: 28, type: 'Blue' },
-        { id: 3, name: 'Promo 3', start: '2025-11-28', end: '2025-11-28', value: 35, type: 'Blue' },
-        { id: 4, name: 'Promo 4', start: '2025-12-01', end: '2026-01-07', value: 32, type: 'Red' },
-        { id: 5, name: 'Promo 5', start: '2026-01-07', end: '2026-01-27', value: 40, type: 'Red' }
-    ];
-
-    let editingId = null;
-    let discountChart;
-
-    function initDashboard() {
-        renderTable();
-        renderChart();
+    function getFilteredPromos() {
+        return promoData.filter(item => {
+            let matchYear = (activeFilterYear === 'Full year' || item.year === activeFilterYear);
+            let matchMonth = (item.month === activeFilterMonth);
+            let matchSlice = (activeFilterSlice === 'Full month' || item.slice === activeFilterSlice);
+            let matchMarket = (item.market === activeFilterMarket || (activeCompareMarket !== 'Off' && item.market === activeCompareMarket));
+            return matchYear && matchMonth && matchSlice && matchMarket;
+        });
     }
 
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
-        promoData.forEach(item => {
+        const dataToRender = getFilteredPromos();
+
+        if (dataToRender.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#6b7280; padding: 20px;">No hay promociones que coincidan con los filtros seleccionados.</td></tr>`;
+            return;
+        }
+
+        dataToRender.forEach(item => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.name}</td>
+            let isRed = item.type === 'Red';
+            let html = `
+                <td><b>${item.name}</b></td>
                 <td>${item.start}</td>
                 <td>${item.end}</td>
                 <td>${item.value}%</td>
-                <td>${item.type === 'Blue' ? 'USA' : 'Launched in Travel'}</td>
-                <td>
-                    <button class="btn" style="padding: 4px 8px; font-size:11px; background:#f3f4f6;" onclick="editPromo(${item.id})">✏️ Editar</button>
-                    <button class="btn" style="padding: 4px 8px; font-size:11px; background:#fee2e2; color:#991b1b;" onclick="deletePromo(${item.id})">🗑️ Eliminar</button>
-                </td>
+                <td><span style="font-weight:600; color:#2563eb;">${item.market}</span></td>
+                <td><span style="color:${isRed ? '#dc2626' : '#059669'}; font-weight:600;">${isRed ? '● Launched in Month' : '○ Regular'}</span></td>
             `;
+            if (isAdmin) {
+                html += `
+                    <td class="admin-col">
+                        <button class="btn" style="padding: 2px 6px; font-size:11px; background:#f3f4f6;" onclick="deletePromo(${item.id})">🗑️ Eliminar</button>
+                    </td>
+                `;
+            } else {
+                html += `<td class="admin-col" style="display:none;"></td>`;
+            }
+            tr.innerHTML = html;
             tbody.appendChild(tr);
         });
     }
 
-    function renderChart() {
-        const ctx = document.getElementById('discountChart').getContext('2d');
-        
-        const datasets = promoData.map(item => ({
-            label: item.name,
-            data: [{x: item.start, y: item.value}, {x: item.end, y: item.value}],
-            borderColor: item.type === 'Blue' ? '#1e293b' : '#b91c1c',
-            borderWidth: 2,
-            pointRadius: 4,
-            fill: false
-        }));
-
-        if (discountChart) {
-            discountChart.destroy();
-        }
-
-        discountChart = new Chart(ctx, {
-            type: 'line',
-            data: { datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        type: 'category',
-                        grid: { color: '#f3f4f6', borderDash: [4, 4] },
-                        ticks: { font: { size: 11 } }
-                    },
-                    y: {
-                        min: 0,
-                        max: 50,
-                        ticks: {
-                            stepSize: 5,
-                            callback: function(value) { return value + '%'; },
-                            font: { size: 11 }
-                        },
-                        grid: { color: '#f3f4f6' },
-                        title: { display: true, text: 'discount', font: { size: 12, weight: '500' } }
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.dataset.label + ': ' + context.raw.y + '% (Desde ' + context.raw.x + ')';
-                            }
-                        }
-                    }
-                }
+    function renderTicketsTable() {
+        const tbody = document.getElementById('ticketsTableBody');
+        tbody.innerHTML = '';
+        ticketsData.forEach(ticket => {
+            const tr = document.createElement('tr');
+            let html = `
+                <td><b>${ticket.id}</b></td>
+                <td>${ticket.hotel}</td>
+                <td>${ticket.issue}</td>
+                <td><span style="padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight:600; background: ${ticket.status==='Resuelto'?'#dcfce7':'#fef3c7'}; color:${ticket.status==='Resuelto'?'#166534':'#d97706'}">${ticket.status}</span></td>
+            `;
+            if (isAdmin) {
+                html += `
+                    <td class="admin-col-tickets">
+                        <button class="btn" style="padding: 3px 8px; font-size:11px; background:#e0e7ff; color:#3730a3;" onclick="extendTicket('${ticket.id}')">⏳ Extender</button>
+                        <button class="btn" style="padding: 3px 8px; font-size:11px; background:#fee2e2; color:#991b1b;" onclick="deleteTicket('${ticket.id}')">🗑️</button>
+                    </td>
+                `;
+            } else {
+                html += `<td class="admin-col-tickets" style="display:none;"></td>`;
             }
+            tr.innerHTML = html;
+            tbody.appendChild(tr);
         });
     }
 
     function addOrUpdatePromo() {
+        if (!isAdmin) return;
         const name = document.getElementById('promoName').value;
         const start = document.getElementById('promoStart').value;
         const end = document.getElementById('promoEnd').value;
         const value = parseFloat(document.getElementById('promoValue').value);
+        const market = document.getElementById('promoMarket').value;
         const type = document.getElementById('promoType').value;
 
         if (!name || !start || !end || isNaN(value)) {
-            alert('Por favor completa todos los campos correctamente.');
+            alert('Por favor completa todos los campos requeridos de la promoción.');
             return;
         }
 
-        if (editingId !== null) {
-            const index = promoData.findIndex(p => p.id === editingId);
-            if (index !== -1) {
-                promoData[index] = { id: editingId, name, start, end, value, type };
-            }
-            editingId = null;
-        } else {
-            const newId = promoData.length > 0 ? Math.max(...promoData.map(p => p.id)) + 1 : 1;
-            promoData.push({ id: newId, name, start, end, value, type });
-        }
-
+        const newId = promoData.length > 0 ? Math.max(...promoData.map(p => p.id)) + 1 : 1;
+        promoData.push({ id: newId, name, start, end, value, market, year: activeFilterYear, month: activeFilterMonth, slice: activeFilterSlice, type });
         clearForm();
         renderTable();
-        renderChart();
-    }
-
-    function editPromo(id) {
-        const item = promoData.find(p => p.id === id);
-        if (item) {
-            document.getElementById('promoName').value = item.name;
-            document.getElementById('promoStart').value = item.start;
-            document.getElementById('promoEnd').value = item.end;
-            document.getElementById('promoValue').value = item.value;
-            document.getElementById('promoType').value = item.type;
-            editingId = id;
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }
     }
 
     function deletePromo(id) {
-        if (confirm('¿Estás seguro de eliminar esta promoción?')) {
-            promoData = promoData.filter(p => p.id !== id);
-            renderTable();
-            renderChart();
-        }
+        if (!isAdmin) return;
+        promoData = promoData.filter(p => p.id !== id);
+        renderTable();
     }
 
     function clearForm() {
@@ -539,26 +1113,90 @@
         document.getElementById('promoStart').value = '';
         document.getElementById('promoEnd').value = '';
         document.getElementById('promoValue').value = '';
-        document.getElementById('promoType').value = 'Blue';
-        editingId = null;
     }
 
-    function exportToExcel() {
-        let csvContent = "data:text/csv;charset=utf-8,Promocion,Fecha Inicio,Fecha Fin,Descuento,Tipo\n";
-        promoData.forEach(row => {
-            csvContent += `"${row.name}","${row.start}","${row.end}","${row.value}%","${row.type}"\n`;
-        });
+    function addOrUpdateTicket() {
+        if (!isAdmin) return;
+        const hotel = document.getElementById('ticketHotelInput').value;
+        const issue = document.getElementById('ticketReasonInput').value;
+        const status = document.getElementById('ticketStatusSelect').value;
+
+        if (!hotel || !issue) {
+            alert('Por favor ingresa el hotel y la incidencia.');
+            return;
+        }
+
+        const newId = 'T-' + (100 + ticketsData.length + 1);
+        ticketsData.push({ id: newId, hotel, issue, status });
+        
+        document.getElementById('ticketHotelInput').value = '';
+        document.getElementById('ticketReasonInput').value = '';
+        renderTicketsTable();
+    }
+
+    function extendTicket(id) {
+        if (!isAdmin) return;
+        const ticket = ticketsData.find(t => t.id === id);
+        if(ticket) {
+            ticket.status = 'Extendido';
+            renderTicketsTable();
+            alert(`El ticket ${id} ha sido extendido exitosamente.`);
+        }
+    }
+
+    function deleteTicket(id) {
+        if (!isAdmin) return;
+        ticketsData = ticketsData.filter(t => t.id !== id);
+        renderTicketsTable();
+    }
+
+    function exportToExcel(type) {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        if (type === 'promos') {
+            const dataToExport = getFilteredPromos();
+            csvContent += "Promocion,Fecha Inicio,Fecha Fin,Descuento,Mercado,Periodo Año,Mes,Corte Slice,Categoria\n";
+            dataToExport.forEach(row => {
+                csvContent += `"${row.name}","${row.start}","${row.end}","${row.value}%","${row.market}","${row.year}","${row.month}","${row.slice}","${row.type}"\n`;
+            });
+        } else {
+            csvContent += "ID Ticket,Hotel,Incidencia,Estatus\n";
+            ticketsData.forEach(row => {
+                csvContent += `"${row.id}","${row.hotel}","${row.issue}","${row.status}"\n`;
+            });
+        }
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "reporte_promociones.csv");
+        link.setAttribute("download", `reporte_${type}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 
-    function exportToPDF() {
-        window.print();
+    function exportToPdf(type) {
+        const printWindow = window.open('', '_blank');
+        let htmlContent = `<html><head><title>Reporte Wyndham - ${type.toUpperCase()}</title><style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #ddd;padding:8px;font-size:12px;text-align:left;}th{background:#0f172a;color:white;}</style></head><body>`;
+        htmlContent += `<h2>Aimbridge LATAM — Reporte de ${type === 'promos' ? 'Promociones (Discount Pace)' : 'Tickets Operativos'}</h2>`;
+        htmlContent += `<p>Filtros activos: ${activeFilterYear} | Mes: ${activeFilterMonth} | Slice: ${activeFilterSlice} | Mercado: ${activeFilterMarket}</p>`;
+        htmlContent += `<p>Fecha de emisión: ${new Date().toLocaleDateString()}</p><table>`;
+        
+        if (type === 'promos') {
+            const dataToExport = getFilteredPromos();
+            htmlContent += `<tr><th>Promo</th><th>Inicio</th><th>Fin</th><th>Descuento</th><th>Mercado</th><th>Categoría</th></tr>`;
+            dataToExport.forEach(p => {
+                htmlContent += `<tr><td>${p.name}</td><td>${p.start}</td><td>${p.end}</td><td>${p.value}%</td><td>${p.market}</td><td>${p.type}</td></tr>`;
+            });
+        } else {
+            htmlContent += `<tr><th>ID</th><th>Hotel</th><th>Incidencia</th><th>Estatus</th></tr>`;
+            ticketsData.forEach(t => {
+                htmlContent += `<tr><td>${t.id}</td><td>${t.hotel}</td><td>${t.issue}</td><td>${t.status}</td></tr>`;
+            });
+        }
+        htmlContent += `</table></body></html>`;
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => printWindow.print(), 500);
     }
 </script>
 
