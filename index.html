@@ -420,7 +420,7 @@
         .btn-pdf { background: #dc2626; color: #fff; }
         .btn-secondary { background: #4b5563; color: #fff; }
 
-        /* MODAL LOGIN */
+        /* MODAL LOGIN (OCULTO POR DEFECTO) */
         #loginModal {
             display: none;
             position: fixed;
@@ -474,12 +474,11 @@
 <aside>
     <div>
         <div class="sidebar-header">
-            <!-- LOGOTIPO CORPORATIVO -->
             <div class="wyndham-logo-text">Wyndham</div>
             <div id="lblSubPanel" class="sidebar-subtitle">Panel Comercial & Soporte</div>
             <div class="lang-selector">
-                <button id="btnLangEsp" class="lang-btn active" onclick="setLanguage('es')">ESP</button>
-                <button id="btnLangEng" class="lang-btn" onclick="setLanguage('en')">ENG</button>
+                <button id="btnLangEsp" class="lang-btn" onclick="setLanguage('es')">ESP</button>
+                <button id="btnLangEng" class="lang-btn active" onclick="setLanguage('en')">ENG</button>
             </div>
         </div>
 
@@ -491,9 +490,9 @@
     </div>
 
     <div class="sidebar-footer">
-        <div id="sessionStatusText" class="session-info">Modo consulta pública</div>
-        <button id="btnLoginSide" class="btn btn-session btn-login-side" onclick="abrirModalLogin()">🔑 Acceso Edición (Admin)</button>
-        <button id="btnLogoutSide" class="btn btn-session btn-logout-side" onclick="cerrarSesion()">Cerrar Sesión</button>
+        <div id="sessionStatusText" class="session-info">Public view mode</div>
+        <button id="btnLoginSide" class="btn btn-session btn-login-side" onclick="abrirModalLogin()">🔑 Edit Access (Admin)</button>
+        <button id="btnLogoutSide" class="btn btn-session btn-logout-side" onclick="cerrarSesion()">Sign Out</button>
     </div>
 </aside>
 
@@ -734,8 +733,8 @@
     </div>
 </main>
 
-<!-- MODAL DE LOGIN -->
-<div id="loginModal">
+<!-- MODAL DE LOGIN (OCULTO AL CARGAR) -->
+<div id="loginModal" style="display: none;">
     <div class="modal-content">
         <h3 id="modalLoginTitle" style="margin-top:0; font-size: 16px;">🔒 Administrator Access</h3>
         <p id="modalLoginDesc" style="font-size: 12px; color: #6b7280;">Ingresa tu contraseña para habilitar la edición.</p>
@@ -759,7 +758,7 @@
     const USER_CORRECTO = "admin";
     const PASS_CORRECTO = "wyndham2026";
     let isAdmin = false;
-    let currentLang = 'en'; // Inglés por defecto acorde a la vista de tickets inicial
+    let currentLang = 'en'; 
     let penetrationChart;
     let currentTierSelected = 'blue';
 
@@ -857,7 +856,7 @@
         renderTable();
         renderTicketsTable();
         selectTier('blue', document.querySelector('.tier-card'));
-        setLanguage('en'); // Configura el idioma por defecto inicial
+        setLanguage('en'); 
     };
 
     function setLanguage(lang) {
