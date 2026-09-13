@@ -14,10 +14,51 @@ from db import (
     crear_ticket, listar_tickets, obtener_ticket, actualizar_ticket
 )
 
-st.set_page_config(page_title="Promo Dashboard", page_icon="🏷️", layout="wide")
+# ---------------------------------------------------------------------------
+# CONFIGURACIÓN DE PÁGINA Y ESTILOS CSS EJECUTIVOS
+# ---------------------------------------------------------------------------
+st.set_page_config(
+    page_title="Promo Dashboard | Aimbridge LATAM",
+    page_icon="🏷️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 init_db()
 
+st.markdown("""
+    <style>
+    /* Ocultar elementos predeterminados de interfaz de Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Bordes y fondo estilizado para contendores y tarjetas */
+    div[data-testid="stExpander"] {
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+        background-color: #1a1c23 !important;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Estilo para la barra lateral */
+    section[data-testid="stSidebar"] {
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
 
+    /* Transición y bordes redondeados en botones */
+    .stButton > button {
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
+# FUNCIONES AUXILIARES DE EXPORTACIÓN (EXCEL / PDF)
+# ---------------------------------------------------------------------------
 def generar_excel(df: pd.DataFrame) -> io.BytesIO:
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
@@ -64,6 +105,9 @@ def botones_descarga(df: pd.DataFrame, nombre_archivo: str, titulo_pdf: str, key
         )
 
 
+# ---------------------------------------------------------------------------
+# NAVEGACIÓN Y BARRA LATERAL
+# ---------------------------------------------------------------------------
 st.title("🏷️ Promo Dashboard")
 
 st.sidebar.image("assets/aimbridge_logo.png", use_container_width=True)
@@ -76,7 +120,7 @@ pagina = st.sidebar.radio(
 )
 
 # ---------------------------------------------------------------------------
-# CONSULTAR
+# CONSULTAR PROMOCIONES
 # ---------------------------------------------------------------------------
 if pagina == "Consultar promociones":
     st.subheader("Promociones registradas")
@@ -329,14 +373,14 @@ elif pagina == "Wyndham Rewards":
                         st.caption(f"📝 {r['notas']}")
                     st.caption(f"Fuente: {r['fuente']} · Actualizado: {r['fecha_actualizacion']}")
 
-                with st.expander("Editar este nivel"):
-                    nuevo_beneficios = st.text_area("Beneficios", value=r["beneficios"], key=f"ben_{r['id']}")
-                    nuevo_notas = st.text_area("Notas", value=r["notas"] or "", key=f"not_{r['id']}")
-                    if st.button("Guardar cambios", key=f"save_{r['id']}"):
-                        actualizar_wyndham_rewards(r["id"], "beneficios", nuevo_beneficios)
-                        actualizar_wyndham_rewards(r["id"], "notas", nuevo_notas)
-                        st.success("Actualizado.")
-                        st.rerun()
+            with st.expander("Editar este nivel"):
+                nuevo_beneficios = st.text_area("Beneficios", value=r["beneficios"], key=f"ben_{r['id']}")
+                nuevo_notas = st.text_area("Notas", value=r["notas"] or "", key=f"not_{r['id']}")
+                if st.button("Guardar cambios", key=f"save_{r['id']}"):
+                    actualizar_wyndham_rewards(r["id"], "beneficios", nuevo_beneficios)
+                    actualizar_wyndham_rewards(r["id"], "notas", nuevo_notas)
+                    st.success("Actualizado.")
+                    st.rerun()
 
 # ---------------------------------------------------------------------------
 # TICKETS WYNDHAM COMMUNITY
