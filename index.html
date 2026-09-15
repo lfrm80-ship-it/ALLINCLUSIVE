@@ -1,1203 +1,1283 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aimbridge LATAM — Wyndham Hub</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --sidebar-width: 260px;
-            --bg-sidebar: #0b132b;
-            --sidebar-border: #1c2541;
-            --accent-color: #d97706;
-            --border-color: #e5e7eb;
-            --main-bg: #f8f9fa;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rate &amp; Distribution Hub — Wyndham Alltra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root{
+    --ink:#132540;
+    --ink-2:#1D3357;
+    --ink-soft:#5B6B85;
+    --bg:#F5F3EE;
+    --surface:#FFFFFF;
+    --teal:#1C6F67;
+    --teal-dark:#124A45;
+    --teal-soft:#E4EFEC;
+    --gold:#A9812F;
+    --gold-soft:#F3EAD3;
+    --coral:#AE4A32;
+    --coral-soft:#F5E4DE;
+    --border:#E4E1D8;
+    --border-soft:#EDEAE2;
+    --text:#1B2434;
+    --text-muted:#6E7688;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --shadow: 0 1px 2px rgba(19,37,64,.04), 0 8px 24px -12px rgba(19,37,64,.12);
+  }
+  *{box-sizing:border-box;}
+  .hidden{display:none!important;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.font-display{font-family:'Fraunces',Georgia,serif;}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
+  ::selection{background:var(--teal-soft);color:var(--teal-dark);}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:4px;}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+  /* ---------- layout ---------- */
+  .app{display:flex;height:100vh;overflow:hidden;}
+  .sidebar{
+    width:272px;flex-shrink:0;
+    background:var(--ink);
+    color:#C7CFDD;
+    display:flex;flex-direction:column;justify-content:space-between;
+    transition:margin-left .25s ease;
+  }
+  .sidebar-header{padding:28px 24px 22px;border-bottom:1px solid rgba(255,255,255,.08);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:40px;height:40px;border-radius:10px;
+    background:linear-gradient(155deg,var(--teal),var(--teal-dark));
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-family:'Fraunces',serif;font-weight:600;font-size:16px;
+  }
+  .brand-name{color:#fff;font-weight:600;font-size:14.5px;letter-spacing:.2px;}
+  .brand-sub{font-size:11px;color:#8DA3C2;margin-top:1px;}
+  .nav{padding:18px 14px;display:flex;flex-direction:column;gap:3px;}
+  .nav-btn{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 14px;border-radius:10px;
+    font-size:13.5px;font-weight:500;color:#B7C1D4;
+    background:transparent;border:none;cursor:pointer;text-align:left;
+    border-left:2px solid transparent;
+    transition:background .15s ease,color .15s ease;
+  }
+  .nav-btn i{width:16px;font-size:13px;color:#7E8CA6;}
+  .nav-btn:hover{background:rgba(255,255,255,.05);color:#fff;}
+  .nav-btn.active{
+    background:rgba(28,111,103,.22);
+    color:#fff;
+    border-left-color:var(--teal);
+  }
+  .nav-btn.active i{color:#4FBDAF;}
+  .sidebar-footer{padding:18px 22px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;}
+  .auth-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .auth-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;}
 
-        body {
-            background-color: var(--main-bg);
-            color: #212529;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+  .main{flex:1;overflow-y:auto;background:var(--bg);}
+  .topbar{
+    position:sticky;top:0;z-index:10;
+    background:rgba(245,243,238,.86);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+    padding:14px 32px;display:none;align-items:center;gap:14px;
+  }
+  .hamburger{
+    width:34px;height:34px;border-radius:9px;border:1px solid var(--border);
+    background:var(--surface);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;color:var(--ink);
+  }
+  .content{padding:36px 40px 60px;max-width:1180px;margin:0 auto;}
 
-        /* MENÚ LATERAL */
-        aside {
-            width: var(--sidebar-width);
-            background-color: var(--bg-sidebar);
-            border-right: 1px solid var(--sidebar-border);
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 24px 16px;
-        }
+  .page-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:26px;}
+  .eyebrow{font-size:12.5px;color:var(--teal-dark);font-weight:600;margin-bottom:6px;}
+  .page-head h2{font-size:27px;margin:0 0 6px;color:var(--ink);font-weight:600;}
+  .page-head p{margin:0;font-size:13.5px;color:var(--text-muted);max-width:52ch;}
 
-        .sidebar-header {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 16px;
-            margin-bottom: 20px;
-            padding-left: 4px;
-        }
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;
+    border:1px solid transparent;cursor:pointer;transition:.15s ease;
+  }
+  .btn-primary{background:var(--ink);color:#fff;}
+  .btn-primary:hover{background:var(--ink-2);}
+  .btn-teal{background:var(--teal);color:#fff;}
+  .btn-teal:hover{background:var(--teal-dark);}
+  .btn-outline{background:var(--surface);border-color:var(--border);color:var(--text);}
+  .btn-outline:hover{border-color:var(--ink-soft);}
+  .btn-ghost{background:transparent;border:none;color:var(--text-muted);padding:6px 8px;}
+  .btn-ghost:hover{color:var(--coral);}
+  .btn-ghost.edit:hover{color:var(--teal-dark);}
+  .btn-sm{padding:7px 12px;font-size:12px;}
 
-        .wyndham-logo-text {
-            font-family: "Georgia", "Times New Roman", serif;
-            font-weight: bold;
-            font-size: 20px;
-            letter-spacing: -0.5px;
-            color: #ffffff;
-            margin-bottom: 4px;
-        }
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow);}
+  .panel + .panel{margin-top:20px;}
 
-        .sidebar-subtitle {
-            font-size: 9px;
-            letter-spacing: 1.2px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            font-weight: 700;
-            margin-top: 4px;
-        }
+  label.field-label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.15px;}
+  .field{
+    width:100%;border:1px solid var(--border);border-radius:9px;
+    padding:10px 12px;font-size:13.5px;font-family:inherit;color:var(--text);
+    background:#FBFAF7;transition:border-color .15s ease, background .15s ease;
+  }
+  .field:focus{border-color:var(--teal);background:#fff;outline:none;}
+  .grid{display:grid;gap:16px;}
+  .grid-2{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  @media(max-width:760px){.grid-2,.grid-3{grid-template-columns:1fr;}}
 
-        .lang-selector {
-            display: flex;
-            gap: 4px;
-            margin-top: 10px;
-        }
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;font-size:11px;font-weight:600;letter-spacing:.1px;
+    color:var(--text-muted);padding:0 12px 10px;border-bottom:1px solid var(--border);
+  }
+  tbody td{padding:13px 12px;border-bottom:1px solid var(--border-soft);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FAF9F5;}
+  .id-cell{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);}
 
-        .lang-btn {
-            background: #1e293b;
-            border: 1px solid #334155;
-            color: #cbd5e1;
-            padding: 2px 8px;
-            font-size: 11px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-        }
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:11.5px;font-weight:600;}
+  .badge-teal{background:var(--teal-soft);color:var(--teal-dark);}
+  .badge-gold{background:var(--gold-soft);color:#7A5D1F;}
+  .badge-coral{background:var(--coral-soft);color:var(--coral);}
+  .badge-slate{background:#EEEDE7;color:var(--ink-soft);}
 
-        .lang-btn.active {
-            background: #2563eb;
-            border-color: #2563eb;
-            color: #fff;
-        }
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;}
+  @media(max-width:760px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px 20px;}
+  .kpi-label{font-size:11.5px;color:var(--text-muted);font-weight:600;}
+  .kpi-val{font-family:'Fraunces',serif;font-size:30px;margin-top:5px;color:var(--ink);}
 
-        .sidebar-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex-grow: 1;
-        }
+  .lock-badge{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:100px;display:inline-flex;align-items:center;gap:6px;}
+  .lock-locked{background:var(--gold-soft);color:#7A5D1F;}
+  .lock-open{background:var(--teal-soft);color:var(--teal-dark);}
 
-        .menu-item {
-            padding: 10px 12px;
-            font-size: 13px;
-            color: #cbd5e1;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
+  /* tiers */
+  .tier-track{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;position:relative;}
+  .tier-track:before{
+    content:"";position:absolute;top:19px;left:5%;right:5%;height:2px;background:var(--border);z-index:0;
+  }
+  .tier-btn{
+    position:relative;z-index:1;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius-md);padding:16px 14px 14px;text-align:left;cursor:pointer;transition:.15s ease;
+  }
+  .tier-btn .tier-dot{width:10px;height:10px;border-radius:50%;background:var(--border);margin-bottom:10px;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--border);}
+  .tier-btn .tier-name{font-family:'Fraunces',serif;font-weight:600;font-size:16.5px;color:var(--ink);}
+  .tier-btn .tier-req{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+  .tier-btn.active{border-color:var(--teal);background:var(--teal-soft);}
+  .tier-btn.active .tier-dot{background:var(--teal);box-shadow:0 0 0 1px var(--teal);}
+  .tier-btn.active .tier-name{color:var(--teal-dark);}
 
-        .menu-item:hover, .menu-item.active {
-            background: #1e293b;
-            color: #ffffff;
-            border-left: 3px solid #3b82f6;
-        }
+  .bench-row{margin-bottom:14px;}
+  .bench-top{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+  .bench-track{width:100%;height:8px;border-radius:100px;background:var(--border-soft);overflow:hidden;}
+  .bench-fill{height:100%;border-radius:100px;}
 
-        .sidebar-footer {
-            border-top: 1px solid var(--sidebar-border);
-            padding-top: 15px;
-        }
+  /* modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(19,37,64,.55);backdrop-filter:blur(2px);
+    display:flex;align-items:center;justify-content:center;padding:16px;z-index:60;
+  }
+  .modal{background:var(--surface);border-radius:20px;max-width:420px;width:100%;padding:32px;box-shadow:0 24px 60px -20px rgba(19,37,64,.35);position:relative;}
+  .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:6px;}
+  .modal-icon{width:52px;height:52px;border-radius:14px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;margin:0 auto 14px;}
+  .err-msg{font-size:12.5px;color:var(--coral);font-weight:500;}
 
-        .session-info {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-bottom: 8px;
-        }
+  /* toast */
+  #toast-wrap{position:fixed;bottom:22px;right:22px;z-index:80;display:flex;flex-direction:column;gap:10px;}
+  .toast{
+    background:var(--ink);color:#fff;padding:13px 18px;border-radius:11px;font-size:13px;font-weight:500;
+    box-shadow:0 12px 30px -8px rgba(19,37,64,.4);display:flex;align-items:center;gap:10px;
+    animation:toast-in .2s ease;max-width:320px;
+  }
+  .toast i{color:#4FBDAF;}
+  .toast.err i{color:#E38A76;}
+  @keyframes toast-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-        .btn-session {
-            width: 100%;
-            padding: 9px;
-            border-radius: 6px;
-            border: none;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-        }
+  .empty-row td{text-align:center;color:var(--text-muted);padding:28px 12px;font-size:13px;}
 
-        .btn-login-side {
-            background: linear-gradient(135deg, #d97706, #b45309);
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
+  /* pdf import */
+  .drop-zone{
+    border:1.5px dashed var(--border);border-radius:var(--radius-md);
+    padding:26px 20px;text-align:center;cursor:pointer;transition:.15s ease;
+    background:#FBFAF7;
+  }
+  .drop-zone:hover,.drop-zone.drag{border-color:var(--teal);background:var(--teal-soft);}
+  .drop-zone i{font-size:20px;color:var(--teal-dark);}
+  .drop-zone .dz-title{font-size:13.5px;font-weight:600;color:var(--ink);margin-top:8px;}
+  .drop-zone .dz-sub{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+  .extract-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .extract-chip{
+    font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:100px;
+    background:var(--teal-soft);color:var(--teal-dark);display:flex;align-items:center;gap:6px;
+  }
+  .extract-chip.miss{background:var(--gold-soft);color:#7A5D1F;}
+  .subtext{font-size:12px;color:var(--text-muted);}
 
-        .btn-logout-side {
-            background: #dc2626;
-            color: white;
-            display: none;
-        }
+  /* periods editor */
+  .period-row{
+    display:grid;grid-template-columns:1fr 1fr 90px 32px;gap:8px;align-items:center;
+    background:#FBFAF7;border:1px solid var(--border-soft);border-radius:9px;padding:8px;
+  }
+  .period-row input{padding:8px 9px;font-size:12.5px;}
+  .period-row .rm-row{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:6px;}
+  .period-row .rm-row:hover{color:var(--coral);}
 
-        /* CONTENIDO PRINCIPAL CENTRADO */
-        main {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+  /* chart modal */
+  .modal-wide{max-width:660px;}
+  .chart-legend{display:flex;gap:16px;align-items:center;font-size:11.5px;color:var(--text-muted);margin-bottom:6px;}
+  .chart-legend .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;}
 
-        .content-wrapper {
-            width: 100%;
-            max-width: 1100px;
-        }
+  @media print{
+    .sidebar,.topbar,.no-print{display:none!important;}
+    .main{overflow:visible;}
+    .content{max-width:100%;padding:0;}
+    .panel{box-shadow:none;border-color:#ccc;}
+  }
 
-        .tab-content {
-            display: none;
-            width: 100%;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        h1 {
-            font-size: 22px;
-            color: #0f172a;
-            margin: 0 0 5px 0;
-        }
-
-        .section-desc {
-            font-size: 13px;
-            color: #64748b;
-            margin-bottom: 20px;
-        }
-
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .tier-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-
-        .tier-card:hover {
-            border-color: #94a3b8;
-        }
-
-        .tier-card.active {
-            border: 2px solid #2563eb;
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
-        }
-
-        .tier-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
-        }
-
-        .tier-value {
-            font-size: 11px;
-            color: #64748b;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.3fr;
-            gap: 20px;
-        }
-
-        .panel-box {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-
-        .panel-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-
-        .benefit-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .benefit-item {
-            font-size: 13px;
-            color: #334155;
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            line-height: 1.4;
-        }
-
-        .benefit-item span {
-            color: #16a34a;
-            font-weight: bold;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 280px;
-            width: 100%;
-        }
-
-        /* FILTROS AVANZADOS TIPO PÍLDORA */
-        .filter-panel {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
-            background-color: #fff;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.01);
-        }
-
-        .filter-row {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .filter-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #4b5563;
-            width: 130px;
-            letter-spacing: 0.5px;
-        }
-
-        .pill-group {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .pill {
-            padding: 5px 12px;
-            font-size: 12px;
-            border-radius: 16px;
-            border: 1px solid #d1d5db;
-            background: #fff;
-            color: #374151;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .pill:hover {
-            border-color: #9ca3af;
-            background: #f9fafb;
-        }
-
-        .pill.active {
-            background: #0f172a;
-            color: #fff;
-            border-color: #0f172a;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-            margin-top: 15px;
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            text-align: left;
-        }
-
-        th, td {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-            color: #374151;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background-color: #f8fafc;
-        }
-
-        .management-section {
-            margin-top: 25px;
-            border-top: 2px solid var(--border-color);
-            padding-top: 20px;
-            display: none;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .form-group label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #4b5563;
-        }
-
-        .form-group input, .form-group select {
-            padding: 8px 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 12px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-action { background: #0f172a; color: #fff; }
-        .btn-success { background: #059669; color: #fff; }
-        .btn-pdf { background: #dc2626; color: #fff; }
-        .btn-secondary { background: #4b5563; color: #fff; }
-
-        /* MODAL LOGIN (OCULTO POR DEFECTO) */
-        #loginModal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            width: 320px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .login-group {
-            margin-bottom: 15px;
-        }
-
-        .login-group label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: #4b5563;
-            margin-bottom: 5px;
-        }
-
-        .login-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 13px;
-            box-sizing: border-box;
-        }
-
-        .error-msg {
-            color: #dc2626;
-            font-size: 11px;
-            margin-bottom: 10px;
-            display: none;
-        }
-    </style>
+  @media(max-width:900px){
+    .sidebar{position:fixed;top:0;bottom:0;left:0;z-index:50;margin-left:-272px;box-shadow:20px 0 40px rgba(0,0,0,.2);}
+    .sidebar.open{margin-left:0;}
+    .topbar{display:flex;}
+    .content{padding:26px 18px 50px;}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
 </head>
 <body>
 
-<!-- MENÚ LATERAL IZQUIERDO -->
-<aside>
+<div id="toast-wrap"></div>
+
+<!-- LOGIN MODAL -->
+<div id="login-modal" class="modal-overlay hidden">
+  <div class="modal">
+    <button onclick="closeLoginModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-icon"><i class="fa-solid fa-lock"></i></div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <h2 style="font-size:20px;margin:0 0 6px;color:var(--ink);">Autorización requerida</h2>
+      <p style="font-size:12.5px;color:var(--text-muted);margin:0;">Ingresa tus credenciales para guardar o modificar registros.</p>
+    </div>
+    <form onsubmit="handleLogin(event)" style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label class="field-label">Usuario</label>
+        <input type="text" id="login-user" required class="field" placeholder="Tu usuario">
+      </div>
+      <div>
+        <label class="field-label">Contraseña</label>
+        <input type="password" id="login-pass" required class="field" placeholder="••••••••">
+      </div>
+      <p id="login-error" class="err-msg hidden">Usuario o contraseña incorrectos.</p>
+      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;">Autorizar acción</button>
+      <p style="font-size:11px;color:var(--text-muted);text-align:center;margin:2px 0 0;">Esta demo valida en el navegador — para uso en equipo, conecta un backend real.</p>
+    </form>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div id="confirm-modal" class="modal-overlay hidden">
+  <div class="modal" style="max-width:360px;">
+    <div class="modal-icon" style="background:var(--coral);"><i class="fa-solid fa-trash-can"></i></div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <h2 style="font-size:18px;margin:0 0 6px;color:var(--ink);">¿Eliminar este registro?</h2>
+      <p id="confirm-text" style="font-size:12.5px;color:var(--text-muted);margin:0;">Esta acción no se puede deshacer.</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeConfirm()" class="btn btn-outline" style="flex:1;justify-content:center;">Cancelar</button>
+      <button onclick="confirmDeleteAction()" class="btn" style="flex:1;justify-content:center;background:var(--coral);color:#fff;">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHART MODAL -->
+<div id="chart-modal" class="modal-overlay hidden">
+  <div class="modal modal-wide">
+    <button onclick="closeChartModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+    <h2 id="chart-title" style="font-size:18px;margin:0 0 3px;color:var(--ink);font-family:'Fraunces',serif;"></h2>
+    <p id="chart-sub" class="subtext" style="margin:0 0 14px;"></p>
+    <div class="chart-legend"><span><span class="dot" style="background:var(--ink);"></span>Descuento por periodo</span></div>
+    <div id="chart-svg-wrap" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
     <div>
-        <div class="sidebar-header">
-            <div class="wyndham-logo-text">Wyndham</div>
-            <div id="lblSubPanel" class="sidebar-subtitle">Panel Comercial & Soporte</div>
-            <div class="lang-selector">
-                <button id="btnLangEsp" class="lang-btn" onclick="setLanguage('es')">ESP</button>
-                <button id="btnLangEng" class="lang-btn active" onclick="setLanguage('en')">ENG</button>
-            </div>
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-mark">WA</div>
+          <div>
+            <div class="brand-name">Wyndham Alltra</div>
+            <div class="brand-sub">Rate &amp; Distribution Hub</div>
+          </div>
         </div>
-
-        <div class="sidebar-menu">
-            <a href="#" class="menu-item" id="menuRewards" onclick="switchMainTab('rewards', this)">Wyndham Rewards</a>
-            <a href="#" class="menu-item" id="menuPromos" onclick="switchMainTab('promos', this)">Promociones</a>
-            <a href="#" class="menu-item active" id="menuTickets" onclick="switchMainTab('tickets', this)">Wyndham Tickets</a>
-        </div>
+      </div>
+      <nav class="nav">
+        <button onclick="switchTab('promos')" id="btn-promos" class="nav-btn active">
+          <i class="fa-solid fa-chart-line"></i><span>Promociones Alltra</span>
+        </button>
+        <button onclick="switchTab('tickets')" id="btn-tickets" class="nav-btn">
+          <i class="fa-solid fa-ticket"></i><span>Tickets Wyndham</span>
+        </button>
+        <button onclick="switchTab('rewards')" id="btn-rewards" class="nav-btn">
+          <i class="fa-solid fa-star"></i><span>Wyndham Rewards</span>
+        </button>
+      </nav>
     </div>
-
     <div class="sidebar-footer">
-        <div id="sessionStatusText" class="session-info">Public view mode</div>
-        <button id="btnLoginSide" class="btn btn-session btn-login-side" onclick="abrirModalLogin()">🔑 Edit Access (Admin)</button>
-        <button id="btnLogoutSide" class="btn btn-session btn-logout-side" onclick="cerrarSesion()">Sign Out</button>
+      <div class="auth-row">
+        <span id="auth-status-label" style="color:#8DA3C2;"><span class="auth-dot" style="background:#8DA3C2;"></span>Modo consulta</span>
+        <button onclick="triggerAuth()" style="background:none;border:none;color:#4FBDAF;font-weight:600;cursor:pointer;font-size:12px;">
+          <span id="auth-btn-text">Iniciar sesión</span>
+        </button>
+      </div>
     </div>
-</aside>
+  </aside>
 
-<!-- CONTENIDO PRINCIPAL CENTRADO -->
-<main>
-    <div class="content-wrapper">
-        <!-- VISTA 1: WYNDHAM REWARDS -->
-        <div id="view-rewards" class="tab-content">
-            <h1 id="rewardsTitle">Wyndham Rewards - Member Levels & Benefits</h1>
-            <div id="rewardsDesc" class="section-desc">Explora las ventajas por nivel de membresía y el rendimiento comercial de la cartera de miembros Wyndham Rewards.</div>
-
-            <div class="cards-grid">
-                <div class="tier-card active" onclick="selectTier('blue', this)">
-                    <div class="tier-title">BLUE</div>
-                    <div id="cardBlueSub" class="tier-value">0 Noches / Registro</div>
-                </div>
-                <div class="tier-card" onclick="selectTier('gold', this)">
-                    <div class="tier-title">GOLD</div>
-                    <div id="cardGoldSub" class="tier-value">5 Noches Cualificadas</div>
-                </div>
-                <div class="tier-card" onclick="selectTier('platinum', this)">
-                    <div class="tier-title">PLATINUM</div>
-                    <div id="cardPlatinumSub" class="tier-value">15 Noches Cualificadas</div>
-                </div>
-                <div class="tier-card" onclick="selectTier('diamond', this)">
-                    <div class="tier-title">DIAMOND</div>
-                    <div id="cardDiamondSub" class="tier-value">40 Noches Cualificadas</div>
-                </div>
-            </div>
-
-            <div class="dashboard-grid">
-                <div class="panel-box">
-                    <div id="benefitTitle" class="panel-title">Nivel BLUE - Beneficios Básicos</div>
-                    <ul id="benefitList" class="benefit-list">
-                        <li class="benefit-item"><span>✓</span> 10 puntos por dólar o 1,000 puntos en estadías calificadas</li>
-                        <li class="benefit-item"><span>✓</span> Wi-Fi gratuito en todas las propiedades All Inclusive</li>
-                        <li class="benefit-item"><span>✓</span> Rollover Nights (Noches acumulables para el siguiente año)</li>
-                    </ul>
-                </div>
-
-                <div class="panel-box">
-                    <div id="chartBoxTitle" class="panel-title">Penetración de Reservas por Nivel de Socio</div>
-                    <div class="chart-container">
-                        <canvas id="penetrationChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- VISTA 2: PROMOCIONES -->
-        <div id="view-promos" class="tab-content">
-            <h1>Offers & discounts — discount pace</h1>
-            <div class="section-desc">Each line = one offer across its booking window • red = launched inside the travel month • season slices from the offers file</div>
-
-            <div class="filter-panel">
-                <div class="filter-row">
-                    <span class="filter-label">TRAVEL PERIOD</span>
-                    <div class="pill-group" id="groupYear">
-                        <button class="pill" onclick="filterBy('year', 'Travel 2025', this)">Travel 2025</button>
-                        <button class="pill active" onclick="filterBy('year', 'Travel 2026', this)">Travel 2026</button>
-                        <button class="pill" onclick="filterBy('year', 'Full year', this)">Full year</button>
-                    </div>
-                    <div class="pill-group" id="groupMonth">
-                        <button class="pill active" onclick="filterBy('month', 'Jan', this)">Jan</button>
-                        <button class="pill" onclick="filterBy('month', 'Feb', this)">Feb</button>
-                        <button class="pill" onclick="filterBy('month', 'Mar', this)">Mar</button>
-                        <button class="pill" onclick="filterBy('month', 'Apr', this)">Apr</button>
-                        <button class="pill" onclick="filterBy('month', 'May', this)">May</button>
-                        <button class="pill" onclick="filterBy('month', 'Jun', this)">Jun</button>
-                        <button class="pill" onclick="filterBy('month', 'Jul', this)">Jul</button>
-                        <button class="pill" onclick="filterBy('month', 'Aug', this)">Aug</button>
-                        <button class="pill" onclick="filterBy('month', 'Sep', this)">Sep</button>
-                        <button class="pill" onclick="filterBy('month', 'Oct', this)">Oct</button>
-                        <button class="pill" onclick="filterBy('month', 'Nov', this)">Nov</button>
-                        <button class="pill" onclick="filterBy('month', 'Dec', this)">Dec</button>
-                    </div>
-                </div>
-
-                <div class="filter-row">
-                    <span class="filter-label">PERIOD SLICE</span>
-                    <div class="pill-group" id="groupSlice">
-                        <button class="pill active" onclick="filterBy('slice', 'Full month', this)">Full month</button>
-                        <button class="pill" onclick="filterBy('slice', '1–2 Jan · Festive', this)">1–2 Jan · Festive</button>
-                        <button class="pill" onclick="filterBy('slice', '3–4 Jan', this)">3–4 Jan</button>
-                        <button class="pill" onclick="filterBy('slice', '5–8 Jan', this)">5–8 Jan</button>
-                        <button class="pill" onclick="filterBy('slice', '9–31 Jan', this)">9–31 Jan</button>
-                    </div>
-                </div>
-
-                <div class="filter-row">
-                    <span class="filter-label">MARKET / COMPARE</span>
-                    <div class="pill-group" id="groupMarket">
-                        <button class="pill" onclick="filterBy('market', 'CANADA', this)">CANADA</button>
-                        <button class="pill" onclick="filterBy('market', 'EUROPE', this)">EUROPE</button>
-                        <button class="pill" onclick="filterBy('market', 'LATAM', this)">LATAM</button>
-                        <button class="pill" onclick="filterBy('market', 'MEXICO', this)">MEXICO</button>
-                        <button class="pill" onclick="filterBy('market', 'ONLINE', this)">ONLINE</button>
-                        <button class="pill active" onclick="filterBy('market', 'USA', this)">USA</button>
-                    </div>
-                    <div style="margin-left: auto; display: flex; gap: 6px; align-items: center;">
-                        <span style="font-size: 11px; font-weight: 700; color: #4b5563;">COMPARE WITH:</span>
-                        <button class="pill active" id="btnCompareOff" onclick="toggleCompare('Off', this)">Off</button>
-                        <button class="pill" onclick="toggleCompare('CANADA', this)">CANADA</button>
-                        <button class="pill" onclick="toggleCompare('EUROPE', this)">EUROPE</button>
-                        <button class="pill" onclick="toggleCompare('LATAM', this)">LATAM</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
-                <h2 id="tableSectionTitle" style="font-size: 16px; margin: 0;">Listado de Promociones</h2>
-                <div style="display: flex; gap: 8px;">
-                    <button id="btnExport" class="btn btn-success" onclick="exportToExcel('promos')">📥 Descargar Excel</button>
-                    <button id="btnExportPdf" class="btn btn-pdf" onclick="exportToPdf('promos')">📄 Descargar PDF</button>
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th id="thPromo">Promo</th>
-                            <th id="thStart">Inicio Reserva</th>
-                            <th id="thEnd">Fin Reserva</th>
-                            <th id="thDiscount">Descuento</th>
-                            <th id="thMarketCol">Mercado</th>
-                            <th id="thType">Categoría / Pace</th>
-                            <th class="admin-col" id="thActions" style="display:none;">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-
-            <div id="managementSection" class="management-section">
-                <h3 id="adminPanelTitle" style="color: #d97706; margin-top: 0;">Panel de Edición y Control</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label id="lblPromoName">Nombre de Promo</label>
-                        <input type="text" id="promoName" placeholder="Ej. Promo 6">
-                    </div>
-                    <div class="form-group">
-                        <label id="lblPromoStart">Fecha Inicio</label>
-                        <input type="date" id="promoStart">
-                    </div>
-                    <div class="form-group">
-                        <label id="lblPromoEnd">Fecha Fin</label>
-                        <input type="date" id="promoEnd">
-                    </div>
-                    <div class="form-group">
-                        <label id="lblPromoValue">Descuento (%)</label>
-                        <input type="number" id="promoValue" placeholder="Ej. 25">
-                    </div>
-                    <div class="form-group">
-                        <label id="lblPromoMarket">Mercado</label>
-                        <select id="promoMarket">
-                            <option value="USA">USA</option>
-                            <option value="CANADA">CANADA</option>
-                            <option value="EUROPE">EUROPE</option>
-                            <option value="LATAM">LATAM</option>
-                            <option value="MEXICO">MEXICO</option>
-                            <option value="ONLINE">ONLINE</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label id="lblPromoType">Tipo / Pace</label>
-                        <select id="promoType">
-                            <option value="Blue">USA (Regular)</option>
-                            <option value="Red">Launched in Travel Month</option>
-                        </select>
-                    </div>
-                </div>
-                <button id="btnSavePromo" class="btn btn-action" onclick="addOrUpdatePromo()">Guardar / Agregar Cambios</button>
-                <button id="btnClearForm" class="btn btn-secondary" onclick="clearForm()">Limpiar Campos</button>
-            </div>
-        </div>
-
-        <!-- VISTA 3: WYNDHAM TICKETS (Activa por defecto) -->
-        <div id="view-tickets" class="tab-content active">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
-                <div>
-                    <h1 id="ticketsTitle">Wyndham Tickets — Access Management</h1>
-                    <div id="ticketsDesc" class="section-desc">Incident control, support tickets, and operational reports.</div>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-success" onclick="exportToExcel('tickets')">📊 Excel Tickets</button>
-                    <button class="btn btn-pdf" onclick="exportToPdf('tickets')">📄 PDF Tickets</button>
-                </div>
-            </div>
-
-            <div id="ticketsBoxText" style="background-color: #ffffff; border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 6px; font-size: 0.85rem; color: #212529; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-                Tickets module active and synchronized with the property network.
-            </div>
-
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th id="thTicketId">Ticket ID</th>
-                            <th id="thTicketProp">Property / Hotel</th>
-                            <th id="thTicketIssue">Incident / Issue</th>
-                            <th id="thTicketStatus">Status</th>
-                            <th class="admin-col-tickets" id="thTicketActions" style="display:none;">Edit / Extension</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ticketsTableBody"></tbody>
-                </table>
-            </div>
-
-            <!-- SECCIÓN DE GESTIÓN DE TICKETS (ADMIN) -->
-            <div id="ticketsManagementSection" class="management-section">
-                <h3 style="color: #d97706; margin-top: 0;" id="ticketAdminTitle">Ticket Administration & Extension Panel</h3>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label id="lblTicketHotel">Property / Hotel</label>
-                        <input type="text" id="ticketHotelInput" placeholder="Ej. Wyndham Cancún">
-                    </div>
-                    <div class="form-group">
-                        <label id="lblTicketReason">Incident / Issue</label>
-                        <input type="text" id="ticketReasonInput" placeholder="Ej. Falla en pasarela CRS">
-                    </div>
-                    <div class="form-group">
-                        <label id="lblTicketExtDate">New Deadline / Extension</label>
-                        <input type="date" id="ticketExtDateInput">
-                    </div>
-                    <div class="form-group">
-                        <label id="lblTicketStatusSelect">Status</label>
-                        <select id="ticketStatusSelect">
-                            <option value="Activo">Activo / En Proceso</option>
-                            <option value="Extendido">Extendido / Prórroga</option>
-                            <option value="Resuelto">Resuelto</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn btn-action" id="btnSaveTicket" onclick="addOrUpdateTicket()">Registrar / Extender Ticket</button>
-            </div>
-        </div>
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <div class="topbar">
+      <button class="hamburger" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <div class="brand" style="gap:9px;">
+        <div class="brand-mark" style="width:30px;height:30px;font-size:12px;">WA</div>
+        <span style="font-weight:600;font-size:13.5px;color:var(--ink);">Rate &amp; Distribution Hub</span>
+      </div>
     </div>
-</main>
 
-<!-- MODAL DE LOGIN (OCULTO AL CARGAR) -->
-<div id="loginModal" style="display: none;">
-    <div class="modal-content">
-        <h3 id="modalLoginTitle" style="margin-top:0; font-size: 16px;">🔒 Administrator Access</h3>
-        <p id="modalLoginDesc" style="font-size: 12px; color: #6b7280;">Ingresa tu contraseña para habilitar la edición.</p>
-        <div class="login-group">
-            <label id="modalUserLabel">Usuario</label>
-            <input type="text" id="userInput" placeholder="admin">
-        </div>
-        <div class="login-group">
-            <label id="modalPassLabel">Contraseña</label>
-            <input type="password" id="passInput" placeholder="••••••••">
-        </div>
-        <div id="errorMsg" class="error-msg">Usuario o contraseña incorrectos.</div>
-        <div style="display: flex; gap: 8px; justify-content: flex-end;">
-            <button id="modalBtnCancel" class="btn btn-secondary" style="padding: 6px 12px; font-size:12px;" onclick="cerrarModalLogin()">Cancelar</button>
-            <button id="modalBtnEnter" class="btn btn-action" style="padding: 6px 12px; font-size:12px;" onclick="verificarLogin()">Entrar</button>
-        </div>
-    </div>
+    <main class="main">
+      <div class="content">
+
+        <!-- PROMOS -->
+        <section id="tab-promos">
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">Comercial</div>
+              <h2 class="font-display">Panel de promociones</h2>
+              <p>Administra y audita los registros comerciales para Punta Cana y Samaná.</p>
+            </div>
+            <div style="display:flex;gap:10px;" class="no-print">
+              <button onclick="exportCSV('promos')" class="btn btn-outline"><i class="fa-solid fa-file-arrow-down"></i>Exportar CSV</button>
+              <button onclick="window.print()" class="btn btn-outline"><i class="fa-solid fa-print"></i>Imprimir / PDF</button>
+            </div>
+          </div>
+
+          <div class="panel no-print">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <h3 class="font-display" style="font-size:16.5px;margin:0;color:var(--ink);">Importar desde PDF de contrato</h3>
+              <span class="subtext"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--teal-dark);"></i> Lee hotel, partner, BW, TW, rate plan y %</span>
+            </div>
+            <div class="drop-zone" id="pdf-drop" onclick="document.getElementById('pdf-input').click()">
+              <input type="file" id="pdf-input" accept="application/pdf" class="hidden" onchange="handlePdfFile(this.files[0])">
+              <i class="fa-solid fa-file-pdf"></i>
+              <div class="dz-title" id="pdf-dz-title">Arrastra el PDF aquí o haz clic para elegir un archivo</div>
+              <div class="dz-sub" id="pdf-dz-sub">Funciona con los formatos de rate sheet de tour operadores (BW / TW / Rate Code / Up to %)</div>
+            </div>
+            <div id="pdf-extract-summary" class="hidden">
+              <div class="extract-list" id="pdf-extract-chips"></div>
+              <p class="subtext" style="margin-top:10px;">Se rellenó el formulario de abajo — revisa los datos y presiona <strong>Guardar promoción</strong> para confirmarlos.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="grid grid-2" style="margin-bottom:12px;">
+              <div>
+                <label class="field-label">Buscar</label>
+                <input type="text" id="filter-search" oninput="filterPromos()" class="field" placeholder="Nombre, partner o rate code">
+              </div>
+              <div>
+                <label class="field-label">Mercado</label>
+                <select id="filter-market" onchange="filterPromos()" class="field">
+                  <option value="Todos">Todos los mercados</option>
+                  <option value="USA">USA</option>
+                  <option value="CANADA">Canadá</option>
+                  <option value="EUROPE">Europa</option>
+                  <option value="LATAM">LATAM</option>
+                  <option value="MEXICO">México</option>
+                  <option value="ONLINE">Online</option>
+                  <option value="OTA">OTA</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-2" style="margin-bottom:18px;">
+              <div>
+                <label class="field-label">Filtrar por hotel</label>
+                <select id="filter-hotel" onchange="filterPromos()" class="field">
+                  <option value="Todos">Todos los hoteles</option>
+                  <option value="Wyndham Alltra Punta Cana">Wyndham Alltra Punta Cana</option>
+                  <option value="Wyndham Alltra Samana">Wyndham Alltra Samana</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Filtrar por estado</label>
+                <select id="filter-status" onchange="filterPromos()" class="field">
+                  <option value="Todos">Todos los estados</option>
+                  <option value="Activa">Activa</option>
+                  <option value="Programada">Programada</option>
+                  <option value="Finalizada">Finalizada</option>
+                </select>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead><tr>
+                  <th>ID</th><th>Hotel / promoción</th><th>Mercado</th><th>Partner</th><th>Rate plan</th><th>Descuento</th><th>BW → TW</th><th>Estado</th><th class="no-print"></th>
+                </tr></thead>
+                <tbody id="promos-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel no-print">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+              <h3 class="font-display" id="promo-form-title" style="font-size:17px;margin:0;color:var(--ink);">Registrar nueva promoción</h3>
+              <span id="lock-badge-promo" class="lock-badge lock-locked"><i class="fa-solid fa-lock"></i>Requiere sesión</span>
+            </div>
+            <form onsubmit="trySavePromo(event)" class="grid grid-3">
+              <input type="hidden" id="edit-promo-id">
+              <div>
+                <label class="field-label">Hotel</label>
+                <select id="new-p-hotel" class="field">
+                  <option value="Wyndham Alltra Punta Cana">Wyndham Alltra Punta Cana</option>
+                  <option value="Wyndham Alltra Samana">Wyndham Alltra Samana</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Nombre de la promoción</label>
+                <input type="text" id="new-p-name" required class="field" placeholder="Ej. Summer Alltra Sale">
+              </div>
+              <div>
+                <label class="field-label">Partner / tour operador</label>
+                <input type="text" id="new-p-partner" class="field" placeholder="Ej. British Airways">
+              </div>
+              <div>
+                <label class="field-label">Rate plan / código</label>
+                <input type="text" id="new-p-rateplan" class="field" placeholder="Ej. SPBAB3">
+              </div>
+              <div>
+                <label class="field-label">Mercado</label>
+                <select id="new-p-market" class="field">
+                  <option value="">Sin especificar</option>
+                  <option value="USA">USA</option>
+                  <option value="CANADA">Canadá</option>
+                  <option value="EUROPE">Europa</option>
+                  <option value="LATAM">LATAM</option>
+                  <option value="MEXICO">México</option>
+                  <option value="ONLINE">Online</option>
+                  <option value="OTA">OTA</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Descuento — up to (%)</label>
+                <input type="number" id="new-p-desc" required min="0" max="100" class="field" placeholder="20">
+              </div>
+              <div>
+                <label class="field-label">Estado</label>
+                <select id="new-p-status" class="field">
+                  <option value="Activa">Activa</option>
+                  <option value="Programada">Programada</option>
+                  <option value="Finalizada">Finalizada</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Booking window (BW)</label>
+                <input type="text" id="new-p-bw" class="field" placeholder="Ej. 14 jul – 15 ago 2026">
+              </div>
+              <div style="grid-column:span 2;">
+                <label class="field-label">Travel window (TW)</label>
+                <input type="text" id="new-p-tw" class="field" placeholder="Ej. 14 jul 2026 – 3 ene 2027">
+              </div>
+              <div style="grid-column:1/-1;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                  <label class="field-label" style="margin-bottom:0;">Periodos de tarifa por fecha de viaje (TW) — opcional</label>
+                  <button type="button" onclick="addPeriodRow()" class="btn btn-outline btn-sm"><i class="fa-solid fa-plus"></i>Agregar periodo</button>
+                </div>
+                <p class="subtext" style="margin:0 0 8px;">Cada fila es un tramo de <strong>fechas de viaje (TW)</strong> con su propio % — la ventana de reserva (BW) de arriba aplica igual para todos los tramos.</p>
+                <div id="periods-col-labels" class="period-row hidden" style="background:none;border:none;padding:0 8px;">
+                  <span class="field-label" style="margin:0;">Inicio de viaje (TW)</span>
+                  <span class="field-label" style="margin:0;">Fin de viaje (TW)</span>
+                  <span class="field-label" style="margin:0;">Descuento</span>
+                  <span></span>
+                </div>
+                <div id="periods-editor" style="display:flex;flex-direction:column;gap:8px;"></div>
+                <p class="subtext" id="periods-empty-hint">Sin periodos — se usará el descuento único de arriba para toda la vigencia.</p>
+              </div>
+              <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;">
+                <button type="button" id="promo-cancel-btn" onclick="cancelPromoEdit()" class="btn btn-outline hidden">Cancelar</button>
+                <button type="submit" id="promo-submit-btn" class="btn btn-teal">Guardar promoción</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TICKETS -->
+        <section id="tab-tickets" class="hidden">
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">Operaciones</div>
+              <h2 class="font-display">Gestión de tickets</h2>
+              <p>Control centralizado de incidencias, solicitudes de distribución y paridades.</p>
+            </div>
+            <div style="display:flex;gap:10px;" class="no-print">
+              <button onclick="exportCSV('tickets')" class="btn btn-outline"><i class="fa-solid fa-file-arrow-down"></i>Exportar CSV</button>
+              <button onclick="window.print()" class="btn btn-outline"><i class="fa-solid fa-print"></i>Imprimir / PDF</button>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi"><div class="kpi-label">Total tickets</div><div class="kpi-val" id="kpi-total">0</div></div>
+            <div class="kpi"><div class="kpi-label">Pendientes / activos</div><div class="kpi-val" id="kpi-open" style="color:var(--gold);">0</div></div>
+            <div class="kpi"><div class="kpi-label">Resueltos</div><div class="kpi-val" id="kpi-resolved" style="color:var(--teal-dark);">0</div></div>
+            <div class="kpi"><div class="kpi-label">Prioridad alta</div><div class="kpi-val" id="kpi-high" style="color:var(--coral);">0</div></div>
+          </div>
+
+          <div class="panel">
+            <div class="grid grid-3" style="margin-bottom:18px;">
+              <div>
+                <label class="field-label">Estado</label>
+                <select id="t-filter-state" onchange="filterTickets()" class="field">
+                  <option value="Todos">Todos</option><option>Abierto</option><option>En Proceso</option><option>Resuelto</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Prioridad</label>
+                <select id="t-filter-priority" onchange="filterTickets()" class="field">
+                  <option value="Todas">Todas</option><option>Alta</option><option>Media</option><option>Baja</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Categoría</label>
+                <select id="t-filter-cat" onchange="filterTickets()" class="field">
+                  <option value="Todas">Todas</option><option>Paridades</option><option>Channel Manager</option><option>Sincronización CRS</option><option>Promociones</option>
+                </select>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead><tr>
+                  <th>ID</th><th>Propiedad</th><th>Categoría</th><th>Prioridad</th><th>Estado</th><th>Asignado</th><th>Fecha límite</th><th class="no-print"></th>
+                </tr></thead>
+                <tbody id="tickets-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel no-print">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+              <h3 class="font-display" id="ticket-form-title" style="font-size:17px;margin:0;color:var(--ink);">Registrar nuevo ticket</h3>
+              <span id="lock-badge-ticket" class="lock-badge lock-locked"><i class="fa-solid fa-lock"></i>Requiere sesión</span>
+            </div>
+            <form onsubmit="trySaveTicket(event)" class="grid grid-2">
+              <input type="hidden" id="edit-ticket-id">
+              <div>
+                <label class="field-label">Propiedad / hotel</label>
+                <input type="text" id="new-t-prop" required class="field" placeholder="Ej. Wyndham Alltra Punta Cana">
+              </div>
+              <div>
+                <label class="field-label">Categoría</label>
+                <select id="new-t-cat" class="field">
+                  <option>Paridades</option><option>Channel Manager</option><option>Sincronización CRS</option><option>Promociones</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Prioridad</label>
+                <select id="new-t-priority" class="field"><option>Alta</option><option>Media</option><option>Baja</option></select>
+              </div>
+              <div>
+                <label class="field-label">Estado inicial</label>
+                <select id="new-t-state" class="field"><option>Abierto</option><option>En Proceso</option><option>Resuelto</option></select>
+              </div>
+              <div>
+                <label class="field-label">Asignado a</label>
+                <input type="text" id="new-t-assigned" required class="field" placeholder="Ej. Revenue Team">
+              </div>
+              <div>
+                <label class="field-label">Fecha límite / SLA</label>
+                <input type="date" id="new-t-deadline" required class="field">
+              </div>
+              <div style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px;">
+                <button type="button" id="ticket-cancel-btn" onclick="cancelTicketEdit()" class="btn btn-outline hidden">Cancelar</button>
+                <button type="submit" id="ticket-submit-btn" class="btn btn-teal">Guardar ticket</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- REWARDS -->
+        <section id="tab-rewards" class="hidden">
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">Fidelización</div>
+              <h2 class="font-display">Wyndham Rewards</h2>
+              <p>Explora las ventajas por nivel de membresía y el rendimiento comercial.</p>
+            </div>
+          </div>
+
+          <div class="tier-track" id="tier-track"></div>
+
+          <div class="grid grid-2">
+            <div class="panel">
+              <h3 id="tier-title" class="font-display" style="font-size:18px;margin:0 0 3px;color:var(--ink);"></h3>
+              <p id="tier-req" style="font-size:12px;color:var(--text-muted);margin:0 0 16px;"></p>
+              <ul id="tier-benefits-list" style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px;font-size:13.5px;"></ul>
+            </div>
+            <div class="panel">
+              <h3 class="font-display" style="font-size:16px;margin:0 0 16px;color:var(--ink);">Penetración de reservas por nivel</h3>
+              <div id="bench-wrap"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
 </div>
 
 <script>
-    const USER_CORRECTO = "admin";
-    const PASS_CORRECTO = "wyndham2026";
-    let isAdmin = false;
-    let currentLang = 'en'; 
-    let penetrationChart;
-    let currentTierSelected = 'blue';
+/* ---------------- state ---------------- */
+let isAuthenticated = false;
+let pendingAction = null;
+let editingPromoId = null;
+let editingTicketId = null;
+let pendingDelete = null; // {type,id}
+let currentPeriods = [];
 
-    let activeFilterYear = 'Travel 2026';
-    let activeFilterMonth = 'Jan';
-    let activeFilterSlice = 'Full month';
-    let activeFilterMarket = 'USA';
-    let activeCompareMarket = 'Off';
+const STORE_KEY_PROMOS = 'wa_hub_promos_v1';
+const STORE_KEY_TICKETS = 'wa_hub_tickets_v1';
 
-    let promoData = [
-        { id: 1, name: 'Promo 1', start: '2026-01-02', end: '2026-01-15', value: 18, market: 'USA', year: 'Travel 2026', month: 'Jan', slice: '9–31 Jan', type: 'Blue' },
-        { id: 2, name: 'Promo 2', start: '2026-01-01', end: '2026-01-05', value: 28, market: 'USA', year: 'Travel 2026', month: 'Jan', slice: '1–2 Jan · Festive', type: 'Red' },
-        { id: 3, name: 'Promo 3', start: '2026-01-10', end: '2026-01-20', value: 35, market: 'LATAM', year: 'Travel 2026', month: 'Jan', slice: '9–31 Jan', type: 'Blue' },
-        { id: 4, name: 'Promo 4', start: '2025-12-01', end: '2025-12-31', value: 32, market: 'CANADA', year: 'Travel 2025', month: 'Dec', slice: 'Full month', type: 'Red' },
-        { id: 5, name: 'Promo 5', start: '2026-01-03', end: '2026-01-12', value: 40, market: 'EUROPE', year: 'Travel 2026', month: 'Jan', slice: '3–4 Jan', type: 'Blue' }
-    ];
+const seedPromos = [
+  { id:"PR-1001", hotel:"Wyndham Alltra Punta Cana", name:"Early Bird Caribbean", partner:"Directo", rateplan:"EBCAR", market:"USA", discount:20, status:"Activa", bw:"1 mar – 31 may 2026", tw:"1 jun – 31 ago 2026", createdAt:"2026-05-12" },
+  { id:"PR-1002", hotel:"Wyndham Alltra Samana", name:"Flash Sale Tropical", partner:"Directo", rateplan:"FSTROP", market:"ONLINE", discount:25, status:"Programada", bw:"1 sep – 30 sep 2026", tw:"1 oct – 15 dic 2026", createdAt:"2026-08-01" }
+];
+const seedTickets = [
+  { id:"WY-1001", prop:"Wyndham Alltra Punta Cana", cat:"Paridades", priority:"Alta", state:"Abierto", assigned:"Equipo Distribución", deadline:"2026-09-15", createdAt:"2026-09-08" },
+  { id:"WY-1002", prop:"Wyndham Alltra Samana", cat:"Channel Manager", priority:"Media", state:"En Proceso", assigned:"Revenue Team", deadline:"2026-09-18", createdAt:"2026-09-05" },
+  { id:"WY-1003", prop:"Wyndham Alltra Punta Cana", cat:"Sincronización CRS", priority:"Baja", state:"Resuelto", assigned:"Soporte IT", deadline:"2026-09-10", createdAt:"2026-08-29" }
+];
 
-    let ticketsData = [
-        { id: 'T-101', hotel: 'Wyndham Alltra Cancún', issue: 'Sincronización de tarifas SynXis CRS', status: 'Activo' },
-        { id: 'T-102', hotel: 'Ramada by Wyndham Playa del Carmen', issue: 'Actualización inventario OPERA PMS', status: 'Extendido' },
-        { id: 'T-103', hotel: 'Wyndham Garden Mexico City', issue: 'Revisión paridad de canales Lighthouse', status: 'Activo' }
-    ];
+function loadStore(key, seed){
+  try{
+    const raw = localStorage.getItem(key);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return seed;
+}
+function saveStore(key, data){
+  try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){}
+}
 
-    const translations = {
-        es: {
-            subPanel: "Panel Comercial & Soporte",
-            menuRewards: "Wyndham Rewards",
-            menuPromos: "Promociones",
-            menuTickets: "Wyndham Tickets",
-            publicStatus: "Modo consulta pública",
-            adminStatus: "🔓 Modo Edición Activo",
-            btnLogin: "🔑 Acceso Edición (Admin)",
-            btnLogout: "Cerrar Sesión",
-            tableTitle: "Listado de Promociones",
-            btnExport: "📥 Descargar Excel",
-            btnExportPdf: "📄 Descargar PDF",
-            thPromo: "Promo",
-            thStart: "Inicio Reserva",
-            thEnd: "Fin Reserva",
-            thDiscount: "Descuento",
-            thMarketCol: "Mercado",
-            thType: "Categoría / Pace",
-            thActions: "Acciones",
-            adminPanelTitle: "Panel de Edición y Control",
-            ticketsTitle: "Wyndham Tickets — Gestión de Accesos",
-            ticketsDesc: "Control de incidencias, tickets de soporte y reportes operativos.",
-            ticketsBoxText: "Módulo de tickets activo y sincronizado con la red de propiedades.",
-            thTicketId: "ID Ticket",
-            thTicketProp: "Propiedad / Hotel",
-            thTicketIssue: "Incidencia / Motivo",
-            thTicketStatus: "Estatus",
-            thTicketActions: "Edición / Extensión",
-            ticketAdminTitle: "Panel de Administración y Extensión de Tickets",
-            modalTitle: "🔒 Acceso de Administrador",
-            modalDesc: "Ingresa tu contraseña para habilitar la edición.",
-            errorLogin: "Usuario o contraseña incorrectos."
-        },
-        en: {
-            subPanel: "Commercial & Support Panel",
-            menuRewards: "Wyndham Rewards",
-            menuPromos: "Promotions",
-            menuTickets: "Wyndham Tickets",
-            publicStatus: "Public view mode",
-            adminStatus: "🔓 Edit Mode Active",
-            btnLogin: "🔑 Edit Access (Admin)",
-            btnLogout: "Sign Out",
-            tableTitle: "Promotions List",
-            btnExport: "📥 Download Excel",
-            btnExportPdf: "📄 Download PDF",
-            thPromo: "Promo",
-            thStart: "Booking Start",
-            thEnd: "Booking End",
-            thDiscount: "Discount",
-            thMarketCol: "Market",
-            thType: "Category / Pace",
-            thActions: "Actions",
-            adminPanelTitle: "Editing & Control Panel",
-            ticketsTitle: "Wyndham Tickets — Access Management",
-            ticketsDesc: "Incident control, support tickets, and operational reports.",
-            ticketsBoxText: "Tickets module active and synchronized with the property network.",
-            thTicketId: "Ticket ID",
-            thTicketProp: "Property / Hotel",
-            thTicketIssue: "Incident / Issue",
-            thTicketStatus: "Status",
-            thTicketActions: "Edit / Extension",
-            ticketAdminTitle: "Ticket Administration & Extension Panel",
-            modalTitle: "🔒 Administrator Access",
-            modalDesc: "Enter your password to enable editing.",
-            errorLogin: "Incorrect username or password."
-        }
-    };
+let promos = loadStore(STORE_KEY_PROMOS, seedPromos);
+let tickets = loadStore(STORE_KEY_TICKETS, seedTickets);
 
-    window.onload = function() {
-        renderPenetrationChart();
-        renderTable();
-        renderTicketsTable();
-        selectTier('blue', document.querySelector('.tier-card'));
-        setLanguage('en'); 
-    };
+const rewardsData = {
+  BLUE:     { title:"Nivel Blue — beneficios básicos", req:"0 noches / registro", color:"var(--ink-soft)", benefits:["10 puntos por dólar o 1,000 puntos en estadías calificadas","Wi-Fi gratuito en todas las propiedades All Inclusive","Acumulación de noches sin vencimiento (rollover)"] },
+  GOLD:     { title:"Nivel Gold — beneficios preferenciales", req:"5 noches cualificadas", color:"var(--gold)", benefits:["10% de puntos bonus adicionales","Check-in preferencial","Late check-out sujeto a disponibilidad"] },
+  PLATINUM: { title:"Nivel Platinum — beneficios avanzados", req:"15 noches cualificadas", color:"var(--ink)", benefits:["15% de puntos bonus adicionales","Early check-in y late check-out prioritario","Upgrade de habitación sujeto a disponibilidad"] },
+  DIAMOND:  { title:"Nivel Diamond — beneficios VIP", req:"40 noches cualificadas", color:"var(--teal-dark)", benefits:["20% de puntos bonus adicionales","Upgrade de suite garantizado","Atención personalizada y línea VIP"] }
+};
+const tierOrder = ["BLUE","GOLD","PLATINUM","DIAMOND"];
+const tierShare = { BLUE:45, GOLD:30, PLATINUM:15, DIAMOND:10 };
+const tierBarColor = { BLUE:"var(--ink-soft)", GOLD:"var(--gold)", PLATINUM:"var(--ink)", DIAMOND:"var(--teal-dark)" };
+const marketLabel = { USA:"USA", CANADA:"CAN", EUROPE:"EUR", LATAM:"LAT", MEXICO:"MEX", ONLINE:"ONL", OTA:"OTA" };
+const marketFull = { USA:"USA", CANADA:"Canadá", EUROPE:"Europa", LATAM:"LATAM", MEXICO:"México", ONLINE:"Online", OTA:"OTA" };
 
-    function setLanguage(lang) {
-        currentLang = lang;
-        document.getElementById('btnLangEsp').classList.toggle('active', lang === 'es');
-        document.getElementById('btnLangEng').classList.toggle('active', lang === 'en');
+/* ---------------- toast ---------------- */
+function toast(msg, type){
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type==='err' ? ' err' : '');
+  el.innerHTML = `<i class="fa-solid ${type==='err' ? 'fa-circle-exclamation' : 'fa-circle-check'}"></i><span>${msg}</span>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .25s'; setTimeout(()=>el.remove(),250); }, 2600);
+}
 
-        const t = translations[lang];
-        document.getElementById('lblSubPanel').innerText = t.subPanel;
-        document.getElementById('menuRewards').innerText = t.menuRewards;
-        document.getElementById('menuPromos').innerText = t.menuPromos;
-        document.getElementById('menuTickets').innerText = t.menuTickets;
-        document.getElementById('sessionStatusText').innerText = isAdmin ? t.adminStatus : t.publicStatus;
-        document.getElementById('btnLoginSide').innerText = t.btnLogin;
-        document.getElementById('btnLogoutSide').innerText = t.btnLogout;
+/* ---------------- sidebar / nav ---------------- */
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('open'); }
+function switchTab(tabId){
+  ['promos','tickets','rewards'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.add('hidden');
+    document.getElementById(`btn-${t}`).classList.remove('active');
+  });
+  document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+  document.getElementById(`btn-${tabId}`).classList.add('active');
+  document.getElementById('sidebar').classList.remove('open');
+}
 
-        document.getElementById('tableSectionTitle').innerText = t.tableTitle;
-        document.getElementById('thPromo').innerText = t.thPromo;
-        document.getElementById('thStart').innerText = t.thStart;
-        document.getElementById('thEnd').innerText = t.thEnd;
-        document.getElementById('thDiscount').innerText = t.thDiscount;
-        document.getElementById('thMarketCol').innerText = t.thMarketCol;
-        document.getElementById('thType').innerText = t.thType;
-        document.getElementById('thActions').innerText = t.thActions;
-        document.getElementById('adminPanelTitle').innerText = t.adminPanelTitle;
+/* ---------------- auth ---------------- */
+function triggerAuth(){
+  if(isAuthenticated){
+    if(confirm("¿Deseas cerrar tu sesión de edición?")){ isAuthenticated=false; updateAuthUI(); toast('Sesión cerrada'); }
+  } else {
+    pendingAction=null;
+    document.getElementById('login-modal').classList.remove('hidden');
+  }
+}
+function closeLoginModal(){
+  document.getElementById('login-modal').classList.add('hidden');
+  pendingAction=null;
+}
+function handleLogin(e){
+  e.preventDefault();
+  const usr=document.getElementById('login-user').value.trim();
+  const psw=document.getElementById('login-pass').value.trim();
+  if(usr==="admin" && psw==="wyndham2026"){
+    isAuthenticated=true; updateAuthUI(); closeLoginModal();
+    document.getElementById('login-user').value='';
+    document.getElementById('login-pass').value='';
+    document.getElementById('login-error').classList.add('hidden');
+    toast('Sesión de edición activa');
+    if(pendingAction==='promo') document.getElementById('promo-submit-btn').click();
+    else if(pendingAction==='ticket') document.getElementById('ticket-submit-btn').click();
+    else if(pendingAction==='delete') confirmDeleteAction();
+    pendingAction=null;
+  } else {
+    document.getElementById('login-error').classList.remove('hidden');
+  }
+}
+function updateAuthUI(){
+  const label=document.getElementById('auth-status-label');
+  const btnText=document.getElementById('auth-btn-text');
+  const pBadge=document.getElementById('lock-badge-promo');
+  const tBadge=document.getElementById('lock-badge-ticket');
+  if(isAuthenticated){
+    label.innerHTML='<span class="auth-dot" style="background:#4FBDAF;"></span>Modo edición';
+    label.style.color='#4FBDAF';
+    btnText.innerText='Cerrar sesión';
+    pBadge.className='lock-badge lock-open'; pBadge.innerHTML='<i class="fa-solid fa-unlock"></i>Edición habilitada';
+    tBadge.className='lock-badge lock-open'; tBadge.innerHTML='<i class="fa-solid fa-unlock"></i>Edición habilitada';
+  } else {
+    label.innerHTML='<span class="auth-dot" style="background:#8DA3C2;"></span>Modo consulta';
+    label.style.color='#8DA3C2';
+    btnText.innerText='Iniciar sesión';
+    pBadge.className='lock-badge lock-locked'; pBadge.innerHTML='<i class="fa-solid fa-lock"></i>Requiere sesión';
+    tBadge.className='lock-badge lock-locked'; tBadge.innerHTML='<i class="fa-solid fa-lock"></i>Requiere sesión';
+  }
+}
 
-        document.getElementById('ticketsTitle').innerText = t.ticketsTitle;
-        document.getElementById('ticketsDesc').innerText = t.ticketsDesc;
-        document.getElementById('ticketsBoxText').innerText = t.ticketsBoxText;
-        document.getElementById('thTicketId').innerText = t.thTicketId;
-        document.getElementById('thTicketProp').innerText = t.thTicketProp;
-        document.getElementById('thTicketIssue').innerText = t.thTicketIssue;
-        document.getElementById('thTicketStatus').innerText = t.thTicketStatus;
-        document.getElementById('thTicketActions').innerText = t.thTicketActions;
-        document.getElementById('ticketAdminTitle').innerText = t.ticketAdminTitle;
+/* ---------------- helpers ---------------- */
+function nextId(list, prefix){
+  let max=0;
+  list.forEach(r=>{
+    const n=parseInt(String(r.id).replace(prefix,''),10);
+    if(!isNaN(n) && n>max) max=n;
+  });
+  return `${prefix}${max+1}`;
+}
+function today(){ return new Date().toISOString().slice(0,10); }
+function csvEscape(v){ const s=String(v??''); return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; }
 
-        document.getElementById('modalLoginTitle').innerText = t.modalTitle;
-        document.getElementById('modalLoginDesc').innerText = t.modalDesc;
-        document.getElementById('errorMsg').innerText = t.errorLogin;
+/* ---------------- PROMOS ---------------- */
+function renderPromos(data){
+  const tbody=document.getElementById('promos-table-body');
+  if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="8">No hay promociones que coincidan con los filtros.</td></tr>`; return; }
+  tbody.innerHTML='';
+  data.forEach(p=>{
+    const badge = p.status==='Activa' ? 'badge-teal' : p.status==='Programada' ? 'badge-gold' : 'badge-slate';
+    const hasPeriods = Array.isArray(p.periods) && p.periods.length>=2;
+    const discountCell = hasPeriods
+      ? `<div style="font-weight:600;color:var(--teal-dark);">hasta ${p.discount}%</div><div style="font-size:11px;color:var(--text-muted);">${p.periods.length} periodos</div>`
+      : `<span style="font-weight:600;color:var(--teal-dark);">${p.discount}%</span>`;
+    const marketCell = p.market
+      ? `<span class="badge badge-slate" title="${marketFull[p.market]||p.market}">${marketLabel[p.market]||p.market}</span>`
+      : `<span style="color:var(--text-muted);font-size:12px;">—</span>`;
+    tbody.innerHTML += `
+      <tr>
+        <td class="id-cell">${p.id}</td>
+        <td>
+          <div style="font-weight:600;color:var(--ink);">${p.name}</div>
+          <div style="font-size:11.5px;color:var(--text-muted);">${p.hotel}</div>
+        </td>
+        <td>${marketCell}</td>
+        <td>${p.partner || '—'}</td>
+        <td class="id-cell">${p.rateplan || '—'}</td>
+        <td>${discountCell}</td>
+        <td style="color:var(--text-muted);font-size:12px;">
+          <div><span style="color:var(--ink-soft);font-weight:600;">BW</span> ${p.bw || '—'}</div>
+          <div><span style="color:var(--ink-soft);font-weight:600;">TW</span> ${p.tw || '—'}</div>
+        </td>
+        <td><span class="badge ${badge}">${p.status}</span></td>
+        <td class="no-print" style="white-space:nowrap;">
+          ${hasPeriods ? `<button class="btn-ghost edit" onclick="openChartModal('${p.id}')" title="Ver gráfica"><i class="fa-solid fa-chart-line"></i></button>` : ''}
+          <button class="btn-ghost edit" onclick="startEditPromo('${p.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn-ghost" onclick="askDelete('promo','${p.id}','${p.name.replace(/'/g,"\\'")}')" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+        </td>
+      </tr>`;
+  });
+}
+function filterPromos(){
+  const hotel=document.getElementById('filter-hotel').value;
+  const status=document.getElementById('filter-status').value;
+  const market=document.getElementById('filter-market').value;
+  const q=document.getElementById('filter-search').value.trim().toLowerCase();
+  renderPromos(promos.filter(p=>
+    (hotel==='Todos'||p.hotel===hotel) &&
+    (status==='Todos'||p.status===status) &&
+    (market==='Todos'||p.market===market) &&
+    (!q || [p.name,p.partner,p.rateplan].some(v=>(v||'').toLowerCase().includes(q)))
+  ));
+}
+function trySavePromo(e){
+  e.preventDefault();
+  if(!isAuthenticated){ pendingAction='promo'; document.getElementById('login-modal').classList.remove('hidden'); return; }
+  executeSavePromo();
+}
+function executeSavePromo(){
+  const name=document.getElementById('new-p-name').value.trim();
+  const validPeriods = currentPeriods
+    .filter(r=>r.start && r.end && r.discount!=='' && r.discount!=null)
+    .map(r=>({start:r.start, end:r.end, discount:Number(r.discount)}))
+    .sort((a,b)=> a.start.localeCompare(b.start));
+  const computedDiscount = validPeriods.length
+    ? Math.max(...validPeriods.map(r=>r.discount))
+    : Number(document.getElementById('new-p-desc').value);
+  const payload={
+    hotel:document.getElementById('new-p-hotel').value,
+    name,
+    partner:document.getElementById('new-p-partner').value.trim(),
+    rateplan:document.getElementById('new-p-rateplan').value.trim(),
+    market:document.getElementById('new-p-market').value,
+    discount:computedDiscount,
+    status:document.getElementById('new-p-status').value,
+    bw:document.getElementById('new-p-bw').value.trim(),
+    tw:document.getElementById('new-p-tw').value.trim(),
+    periods:validPeriods
+  };
+  if(editingPromoId){
+    const idx=promos.findIndex(p=>p.id===editingPromoId);
+    promos[idx]={...promos[idx], ...payload};
+    toast('Promoción actualizada');
+  } else {
+    promos.push({ id:nextId(promos,'PR-'), ...payload, createdAt:today() });
+    toast('Promoción registrada');
+  }
+  saveStore(STORE_KEY_PROMOS, promos);
+  cancelPromoEdit();
+  filterPromos();
+}
+function startEditPromo(id){
+  const p=promos.find(x=>x.id===id); if(!p) return;
+  editingPromoId=id;
+  document.getElementById('new-p-hotel').value=p.hotel;
+  document.getElementById('new-p-name').value=p.name;
+  document.getElementById('new-p-partner').value=p.partner||'';
+  document.getElementById('new-p-rateplan').value=p.rateplan||'';
+  document.getElementById('new-p-market').value=p.market||'';
+  document.getElementById('new-p-desc').value=p.discount;
+  document.getElementById('new-p-status').value=p.status;
+  document.getElementById('new-p-bw').value=p.bw||'';
+  document.getElementById('new-p-tw').value=p.tw||'';
+  currentPeriods = Array.isArray(p.periods) ? p.periods.map(r=>({...r})) : [];
+  renderPeriodRows();
+  document.getElementById('promo-form-title').innerText=`Editando ${p.id}`;
+  document.getElementById('promo-submit-btn').innerText='Guardar cambios';
+  document.getElementById('promo-cancel-btn').classList.remove('hidden');
+  document.getElementById('promo-form-title').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelPromoEdit(){
+  editingPromoId=null;
+  document.getElementById('promo-form-title').innerText='Registrar nueva promoción';
+  document.getElementById('promo-submit-btn').innerText='Guardar promoción';
+  document.getElementById('promo-cancel-btn').classList.add('hidden');
+  document.querySelector('#tab-promos form').reset();
+  document.getElementById('pdf-extract-summary').classList.add('hidden');
+  currentPeriods = [];
+  renderPeriodRows();
+}
+
+/* ---------------- periods editor ---------------- */
+function renderPeriodRows(){
+  const wrap=document.getElementById('periods-editor');
+  const hint=document.getElementById('periods-empty-hint');
+  const colLabels=document.getElementById('periods-col-labels');
+  if(!currentPeriods.length){ wrap.innerHTML=''; hint.classList.remove('hidden'); colLabels.classList.add('hidden'); return; }
+  hint.classList.add('hidden');
+  colLabels.classList.remove('hidden');
+  wrap.innerHTML = currentPeriods.map((r,idx)=>`
+    <div class="period-row">
+      <input type="date" class="field" value="${r.start||''}" onchange="updatePeriodField(${idx},'start',this.value)">
+      <input type="date" class="field" value="${r.end||''}" onchange="updatePeriodField(${idx},'end',this.value)">
+      <input type="number" min="0" max="100" class="field" placeholder="%" value="${r.discount!=null?r.discount:''}" onchange="updatePeriodField(${idx},'discount',this.value)">
+      <button type="button" class="rm-row" onclick="removePeriodRow(${idx})" title="Quitar periodo"><i class="fa-solid fa-xmark"></i></button>
+    </div>`).join('');
+}
+function addPeriodRow(){ currentPeriods.push({start:'',end:'',discount:''}); renderPeriodRows(); }
+function removePeriodRow(idx){ currentPeriods.splice(idx,1); renderPeriodRows(); }
+function updatePeriodField(idx,field,value){ currentPeriods[idx][field]=field==='discount'?value:value; }
+
+/* ---------------- discount chart ---------------- */
+function closeChartModal(){ document.getElementById('chart-modal').classList.add('hidden'); }
+function openChartModal(id){
+  const p=promos.find(x=>x.id===id); if(!p || !Array.isArray(p.periods) || p.periods.length<2) return;
+  document.getElementById('chart-title').innerText = `${p.name} — descuento por fecha de viaje (TW)`;
+  document.getElementById('chart-sub').innerHTML = `${p.hotel}${p.partner?' · '+p.partner:''}${p.rateplan?' · '+p.rateplan:''}${p.bw?` · <strong>Ventana de reserva (BW):</strong> ${p.bw}`:''}`;
+  document.getElementById('chart-svg-wrap').innerHTML = buildDiscountChartSVG(p.periods);
+  document.getElementById('chart-modal').classList.remove('hidden');
+}
+function buildDiscountChartSVG(periods){
+  const sorted = [...periods].sort((a,b)=>a.start.localeCompare(b.start));
+  const W=612,H=280,M={top:16,right:20,bottom:34,left:40};
+  const plotW=W-M.left-M.right, plotH=H-M.top-M.bottom;
+  const toTime = s => new Date(s+'T00:00:00').getTime();
+  const minT = Math.min(...sorted.map(r=>toTime(r.start)));
+  const maxT = Math.max(...sorted.map(r=>toTime(r.end)));
+  const span = Math.max(maxT-minT, 86400000);
+  const padT = span*0.04;
+  const t0 = minT-padT, t1=maxT+padT;
+  const maxDiscount = Math.max(...sorted.map(r=>r.discount));
+  const yMax = Math.max(50, Math.ceil(maxDiscount/10)*10);
+  const x = t => M.left + ((t-t0)/(t1-t0))*plotW;
+  const y = d => M.top + plotH - (d/yMax)*plotH;
+
+  let svg = `<svg viewBox="0 0 ${W} ${H+16}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:Inter,sans-serif;">`;
+  // gridlines + y labels
+  for(let g=0; g<=yMax; g+=10){
+    const gy=y(g);
+    svg += `<line x1="${M.left}" y1="${gy}" x2="${W-M.right}" y2="${gy}" stroke="#E4E1D8" stroke-width="1"/>`;
+    svg += `<text x="${M.left-8}" y="${gy+3}" text-anchor="end" font-size="9.5" fill="#6E7688">${g}%</text>`;
+  }
+  // x labels
+  const ticks=5;
+  for(let i=0;i<=ticks;i++){
+    const t = t0 + (t1-t0)*(i/ticks);
+    const d = new Date(t);
+    const lbl = d.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+    svg += `<text x="${x(t)}" y="${H-M.bottom+16}" text-anchor="middle" font-size="9.5" fill="#6E7688">${lbl}</text>`;
+  }
+  // connectors between periods
+  for(let i=0;i<sorted.length-1;i++){
+    const a=sorted[i], b=sorted[i+1];
+    svg += `<line x1="${x(toTime(a.end))}" y1="${y(a.discount)}" x2="${x(toTime(b.start))}" y2="${y(b.discount)}" stroke="#1C6F67" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.55"/>`;
+  }
+  // segments + dots
+  sorted.forEach(r=>{
+    const x1=x(toTime(r.start)), x2=x(toTime(r.end)), yy=y(r.discount);
+    svg += `<line x1="${x1}" y1="${yy}" x2="${x2}" y2="${yy}" stroke="#132540" stroke-width="3" stroke-linecap="round"/>`;
+    svg += `<circle cx="${x1}" cy="${yy}" r="4" fill="#132540"/>`;
+    svg += `<circle cx="${x2}" cy="${yy}" r="4" fill="#132540"/>`;
+    svg += `<text x="${(x1+x2)/2}" y="${yy-9}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#132540">${r.discount}%</text>`;
+  });
+  svg += `<text x="${M.left+plotW/2}" y="${H+11}" text-anchor="middle" font-size="10" fill="#6E7688" font-weight="600">Fecha de viaje (TW)</text>`;
+  svg += `</svg>`;
+  return svg;
+}
+
+/* ---------------- PDF import ---------------- */
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+const PDF_LABELS = ["HOTEL NAME","LEGAL NAME","ADDRESS","ATTN TO","EMAIL 1","EMAIL 2","TOUR OPERATOR","TAX ID",
+  "PROMOTION","MARKET","BOOKING WINDOW","UP TO","TRAVEL WINDOW","RATE CODE","RESTRICTIONS","ALLOTMENT","PRICES"];
+function pdfGetField(text, label){
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const lookahead = PDF_LABELS.map(esc).join('|');
+  const re = new RegExp(esc(label) + '\\s*:?\\s*([\\s\\S]*?)(?=(?:' + lookahead + ')\\s*:|$)', 'i');
+  const m = text.match(re);
+  return m ? m[1].replace(/\s+/g,' ').trim().replace(/[|:]+$/,'').trim() : '';
+}
+function pdfMatchHotel(raw){
+  const r=(raw||'').toLowerCase();
+  if(r.includes('punta cana')) return 'Wyndham Alltra Punta Cana';
+  if(r.includes('samana') || r.includes('samaná')) return 'Wyndham Alltra Samana';
+  return '';
+}
+function pdfMatchMarket(raw){
+  const r=(raw||'').toLowerCase();
+  if(r.includes('eur')) return 'EUROPE';
+  if(r.includes('usd') || r.includes('usa')) return 'USA';
+  if(r.includes('cad') || r.includes('canada')) return 'CANADA';
+  if(r.includes('mex')) return 'MEXICO';
+  if(r.includes('lat')) return 'LATAM';
+  if(r.includes('online')) return 'ONLINE';
+  if(r.includes('ota')) return 'OTA';
+  return '';
+}
+function pdfParseLooseDate(str){
+  if(!str) return '';
+  const months={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+  const clean=str.replace(/(\d+)(st|nd|rd|th)/gi,'$1').replace(/,/g,' ').replace(/\s+/g,' ').trim();
+  const parts=clean.split(' ');
+  if(parts.length<3) return '';
+  const mon=months[parts[0].toLowerCase()];
+  const day=parseInt(parts[1],10);
+  const year=parseInt(parts[2],10);
+  if(!mon||!day||!year) return '';
+  return `${year}-${String(mon).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+}
+function extractPdfPeriods(text){
+  const rangeRe = /Valid\s+([A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s*\d{4})\s*(?:through|to|–|-)\s*(?:the\s+night\s+of\s*)?([A-Za-z]+\s+\d{1,2}(?:st|nd|rd|th)?,?\s*\d{4})/gi;
+  const pctRe = /(\d{1,3})\s*%\s*DISCOUNT/gi;
+  const ranges=[]; const pcts=[];
+  let m;
+  while((m=rangeRe.exec(text))){
+    const s=pdfParseLooseDate(m[1]), e=pdfParseLooseDate(m[2]);
+    if(s && e) ranges.push({start:s,end:e});
+  }
+  while((m=pctRe.exec(text))) pcts.push(Number(m[1]));
+  const n = Math.min(ranges.length, pcts.length);
+  const out=[];
+  const seen=new Set();
+  for(let i=0;i<n;i++){
+    const key = ranges[i].start+ranges[i].end+pcts[i];
+    if(seen.has(key)) continue;
+    seen.add(key);
+    out.push({start:ranges[i].start, end:ranges[i].end, discount:pcts[i]});
+  }
+  return out.sort((a,b)=>a.start.localeCompare(b.start));
+}
+async function handlePdfFile(file){
+  if(!file) return;
+  document.getElementById('pdf-dz-title').innerText = `Leyendo ${file.name}…`;
+  try{
+    if(!window.pdfjsLib) throw new Error('pdf.js no disponible');
+    const buf = await file.arrayBuffer();
+    const doc = await pdfjsLib.getDocument({data:buf}).promise;
+    const pagesToRead = Math.min(doc.numPages, 2);
+    let text = '';
+    let fullText = '';
+    const pagesForPeriods = Math.min(doc.numPages, 6);
+    for(let i=1;i<=pagesForPeriods;i++){
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(it=>it.str).join(' ') + '\n';
+      if(i<=pagesToRead) text += pageText;
+      fullText += pageText;
     }
 
-    function switchMainTab(tabName, element) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+    const hotelRaw = pdfGetField(text,'HOTEL NAME');
+    const partner = pdfGetField(text,'TOUR OPERATOR');
+    let promoName = pdfGetField(text,'PROMOTION').replace(/^\*+|\*+$/g,'').trim();
+    const bw = pdfGetField(text,'BOOKING WINDOW');
+    const tw = pdfGetField(text,'TRAVEL WINDOW');
+    const rateCode = pdfGetField(text,'RATE CODE');
+    const upToRaw = pdfGetField(text,'UP TO');
+    const marketRaw = pdfGetField(text,'MARKET');
+    const marketMatched = pdfMatchMarket(marketRaw);
+    const discountMatch = upToRaw.match(/(\d{1,3})\s*%/);
+    const discount = discountMatch ? discountMatch[1] : '';
+    const hotelMatched = pdfMatchHotel(hotelRaw);
+    const detectedPeriods = extractPdfPeriods(fullText);
 
-        document.getElementById('view-' + tabName).classList.add('active');
-        element.classList.add('active');
+    const found = [];
+    const missing = [];
+    const track = (label,val) => (val ? found.push(label) : missing.push(label));
+    track('Hotel', hotelMatched || hotelRaw);
+    track('Partner', partner);
+    track('Mercado', marketMatched || marketRaw);
+    track('Promoción', promoName);
+    track('BW', bw);
+    track('TW', tw);
+    track('Rate code', rateCode);
+    track('Descuento', discount);
 
-        if(tabName === 'rewards' && penetrationChart) {
-            setTimeout(() => penetrationChart.resize(), 50);
-        }
+    if(!found.length){
+      toast('No se pudieron identificar los campos — revisa que sea el formato de rate sheet habitual','err');
+    } else {
+      if(hotelMatched) document.getElementById('new-p-hotel').value = hotelMatched;
+      if(promoName) document.getElementById('new-p-name').value = promoName;
+      if(partner) document.getElementById('new-p-partner').value = partner;
+      if(rateCode) document.getElementById('new-p-rateplan').value = rateCode;
+      if(marketMatched) document.getElementById('new-p-market').value = marketMatched;
+      if(discount) document.getElementById('new-p-desc').value = discount;
+      if(bw) document.getElementById('new-p-bw').value = bw;
+      if(tw) document.getElementById('new-p-tw').value = tw;
+      if(detectedPeriods.length>=2){
+        currentPeriods = detectedPeriods;
+        renderPeriodRows();
+        found.push(`${detectedPeriods.length} periodos`);
+      }
+
+      const chipsWrap = document.getElementById('pdf-extract-chips');
+      chipsWrap.innerHTML = found.map(l=>`<span class="extract-chip"><i class="fa-solid fa-check"></i>${l}</span>`).join('')
+        + missing.map(l=>`<span class="extract-chip miss"><i class="fa-solid fa-question"></i>${l} (no encontrado)</span>`).join('');
+      document.getElementById('pdf-extract-summary').classList.remove('hidden');
+      document.getElementById('promo-form-title').scrollIntoView({behavior:'smooth',block:'center'});
+      toast(`Datos extraídos de ${file.name}`);
     }
+  } catch(err){
+    console.error(err);
+    toast('No se pudo leer el PDF — inténtalo con otro archivo o captura los datos manualmente','err');
+  } finally {
+    document.getElementById('pdf-dz-title').innerText = 'Arrastra el PDF aquí o haz clic para elegir un archivo';
+    document.getElementById('pdf-input').value = '';
+  }
+}
+(function setupDropZone(){
+  const zone = document.getElementById('pdf-drop');
+  if(!zone) return;
+  ['dragenter','dragover'].forEach(ev=>zone.addEventListener(ev, e=>{ e.preventDefault(); zone.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev=>zone.addEventListener(ev, e=>{ e.preventDefault(); zone.classList.remove('drag'); }));
+  zone.addEventListener('drop', e=>{
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if(file && file.type==='application/pdf') handlePdfFile(file);
+    else toast('Solo se aceptan archivos PDF','err');
+  });
+})();
 
-    function selectTier(tier, element) {
-        currentTierSelected = tier;
-        document.querySelectorAll('.tier-card').forEach(card => card.classList.remove('active'));
-        if(element) element.classList.add('active');
-    }
+/* ---------------- TICKETS ---------------- */
+function renderTickets(data){
+  const tbody=document.getElementById('tickets-table-body');
+  if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="8">No hay tickets que coincidan con los filtros.</td></tr>`; }
+  else {
+    tbody.innerHTML='';
+    data.forEach(t=>{
+      const pBadge = t.priority==='Alta' ? 'badge-coral' : t.priority==='Media' ? 'badge-gold' : 'badge-slate';
+      tbody.innerHTML += `
+        <tr>
+          <td class="id-cell">${t.id}</td>
+          <td>${t.prop}</td>
+          <td>${t.cat}</td>
+          <td><span class="badge ${pBadge}">${t.priority}</span></td>
+          <td style="font-weight:600;color:${t.state==='Resuelto'?'var(--teal-dark)':'var(--ink)'};">${t.state}</td>
+          <td style="color:var(--text-muted);">${t.assigned}</td>
+          <td style="color:var(--text-muted);font-size:12.5px;">${t.deadline}</td>
+          <td class="no-print" style="white-space:nowrap;">
+            <button class="btn-ghost edit" onclick="startEditTicket('${t.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+            <button class="btn-ghost" onclick="askDelete('ticket','${t.id}','${t.id}')" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>`;
+    });
+  }
+  updateKPIs();
+}
+function updateKPIs(){
+  document.getElementById('kpi-total').innerText=tickets.length;
+  document.getElementById('kpi-open').innerText=tickets.filter(t=>t.state==='Abierto'||t.state==='En Proceso').length;
+  document.getElementById('kpi-resolved').innerText=tickets.filter(t=>t.state==='Resuelto').length;
+  document.getElementById('kpi-high').innerText=tickets.filter(t=>t.priority==='Alta').length;
+}
+function filterTickets(){
+  const state=document.getElementById('t-filter-state').value;
+  const priority=document.getElementById('t-filter-priority').value;
+  const cat=document.getElementById('t-filter-cat').value;
+  renderTickets(tickets.filter(t=>(state==='Todos'||t.state===state)&&(priority==='Todas'||t.priority===priority)&&(cat==='Todas'||t.cat===cat)));
+}
+function trySaveTicket(e){
+  e.preventDefault();
+  if(!isAuthenticated){ pendingAction='ticket'; document.getElementById('login-modal').classList.remove('hidden'); return; }
+  executeSaveTicket();
+}
+function executeSaveTicket(){
+  const payload={
+    prop:document.getElementById('new-t-prop').value.trim(),
+    cat:document.getElementById('new-t-cat').value,
+    priority:document.getElementById('new-t-priority').value,
+    state:document.getElementById('new-t-state').value,
+    assigned:document.getElementById('new-t-assigned').value.trim(),
+    deadline:document.getElementById('new-t-deadline').value
+  };
+  if(editingTicketId){
+    const idx=tickets.findIndex(t=>t.id===editingTicketId);
+    tickets[idx]={...tickets[idx], ...payload};
+    toast('Ticket actualizado');
+  } else {
+    tickets.push({ id:nextId(tickets,'WY-'), ...payload, createdAt:today() });
+    toast('Ticket registrado');
+  }
+  saveStore(STORE_KEY_TICKETS, tickets);
+  cancelTicketEdit();
+  filterTickets();
+}
+function startEditTicket(id){
+  const t=tickets.find(x=>x.id===id); if(!t) return;
+  editingTicketId=id;
+  document.getElementById('new-t-prop').value=t.prop;
+  document.getElementById('new-t-cat').value=t.cat;
+  document.getElementById('new-t-priority').value=t.priority;
+  document.getElementById('new-t-state').value=t.state;
+  document.getElementById('new-t-assigned').value=t.assigned;
+  document.getElementById('new-t-deadline').value=t.deadline;
+  document.getElementById('ticket-form-title').innerText=`Editando ${t.id}`;
+  document.getElementById('ticket-submit-btn').innerText='Guardar cambios';
+  document.getElementById('ticket-cancel-btn').classList.remove('hidden');
+  document.getElementById('ticket-form-title').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelTicketEdit(){
+  editingTicketId=null;
+  document.getElementById('ticket-form-title').innerText='Registrar nuevo ticket';
+  document.getElementById('ticket-submit-btn').innerText='Guardar ticket';
+  document.getElementById('ticket-cancel-btn').classList.add('hidden');
+  document.querySelector('#tab-tickets form').reset();
+}
 
-    function filterBy(category, value, btnElement) {
-        const container = btnElement.parentElement;
-        container.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-        btnElement.classList.add('active');
+/* ---------------- delete flow ---------------- */
+function askDelete(type,id,label){
+  if(!isAuthenticated){ pendingAction='delete'; pendingDelete={type,id}; document.getElementById('login-modal').classList.remove('hidden'); return; }
+  pendingDelete={type,id};
+  document.getElementById('confirm-text').innerText = `${label} se eliminará permanentemente.`;
+  document.getElementById('confirm-modal').classList.remove('hidden');
+}
+function closeConfirm(){ document.getElementById('confirm-modal').classList.add('hidden'); pendingDelete=null; }
+function confirmDeleteAction(){
+  if(!pendingDelete) { document.getElementById('confirm-modal').classList.add('hidden'); return; }
+  if(pendingDelete.type==='promo'){
+    promos=promos.filter(p=>p.id!==pendingDelete.id);
+    saveStore(STORE_KEY_PROMOS, promos); filterPromos();
+  } else {
+    tickets=tickets.filter(t=>t.id!==pendingDelete.id);
+    saveStore(STORE_KEY_TICKETS, tickets); filterTickets();
+  }
+  toast('Registro eliminado');
+  document.getElementById('confirm-modal').classList.add('hidden');
+  pendingDelete=null;
+}
 
-        if(category === 'year') activeFilterYear = value;
-        if(category === 'month') activeFilterMonth = value;
-        if(category === 'slice') activeFilterSlice = value;
-        if(category === 'market') activeFilterMarket = value;
+/* ---------------- export ---------------- */
+function exportCSV(which){
+  const rows = which==='promos'
+    ? [['ID','Hotel','Promoción','Mercado','Partner','Rate plan','Descuento %','BW','TW','Estado','Creado'], ...promos.map(p=>[p.id,p.hotel,p.name,marketFull[p.market]||p.market||'',p.partner,p.rateplan,p.discount,p.bw,p.tw,p.status,p.createdAt])]
+    : [['ID','Propiedad','Categoría','Prioridad','Estado','Asignado','Fecha límite','Creado'], ...tickets.map(t=>[t.id,t.prop,t.cat,t.priority,t.state,t.assigned,t.deadline,t.createdAt])];
+  const csv = rows.map(r=>r.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob(["\ufeff"+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download = `${which}_wyndham_alltra_${today()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  toast('CSV descargado');
+}
 
-        renderTable();
-    }
+/* ---------------- rewards ---------------- */
+function renderTierTrack(){
+  const track=document.getElementById('tier-track');
+  track.innerHTML = tierOrder.map(k=>`
+    <button class="tier-btn" id="tier-btn-${k}" onclick="selectTier('${k}')">
+      <div class="tier-dot"></div>
+      <div class="tier-name">${k.charAt(0)+k.slice(1).toLowerCase()}</div>
+      <div class="tier-req">${rewardsData[k].req}</div>
+    </button>`).join('');
+}
+function renderBenchmark(){
+  const wrap=document.getElementById('bench-wrap');
+  wrap.innerHTML = tierOrder.map(k=>`
+    <div class="bench-row">
+      <div class="bench-top"><span>${k.charAt(0)+k.slice(1).toLowerCase()}</span><span>${tierShare[k]}%</span></div>
+      <div class="bench-track"><div class="bench-fill" style="width:${tierShare[k]}%;background:${tierBarColor[k]};"></div></div>
+    </div>`).join('');
+}
+function selectTier(tierKey){
+  tierOrder.forEach(k=>document.getElementById(`tier-btn-${k}`).classList.toggle('active', k===tierKey));
+  const info=rewardsData[tierKey];
+  document.getElementById('tier-title').innerText=info.title;
+  document.getElementById('tier-req').innerText=`Requisito: ${info.req}`;
+  document.getElementById('tier-benefits-list').innerHTML = info.benefits.map(b=>
+    `<li style="display:flex;gap:10px;align-items:flex-start;"><i class="fa-solid fa-check" style="color:var(--teal);margin-top:3px;"></i><span>${b}</span></li>`
+  ).join('');
+}
 
-    function toggleCompare(marketVal, btnElement) {
-        const container = btnElement.parentElement;
-        container.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
-        btnElement.classList.add('active');
-        activeCompareMarket = marketVal;
-        renderTable();
-    }
-
-    function renderPenetrationChart() {
-        const ctx = document.getElementById('penetrationChart').getContext('2d');
-        penetrationChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Blue', 'Gold', 'Platinum', 'Diamond'],
-                datasets: [{
-                    data: [45, 30, 15, 10],
-                    backgroundColor: ['#0284c7', '#d97706', '#64748b', '#0f172a'],
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { y: { min: 0, max: 50, ticks: { stepSize: 10 } } }
-            }
-        });
-    }
-
-    function abrirModalLogin() {
-        document.getElementById('userInput').value = '';
-        document.getElementById('passInput').value = '';
-        document.getElementById('errorMsg').style.display = 'none';
-        document.getElementById('loginModal').style.display = 'flex';
-    }
-
-    function cerrarModalLogin() {
-        document.getElementById('loginModal').style.display = 'none';
-    }
-
-    function verificarLogin() {
-        const u = document.getElementById('userInput').value.trim();
-        const p = document.getElementById('passInput').value.trim();
-        const error = document.getElementById('errorMsg');
-
-        if (u === USER_CORRECTO && p === PASS_CORRECTO) {
-            isAdmin = true;
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('btnLoginSide').style.display = 'none';
-            document.getElementById('btnLogoutSide').style.display = 'block';
-            document.getElementById('sessionStatusText').innerText = translations[currentLang].adminStatus;
-            document.getElementById('sessionStatusText').style.color = "#16a34a";
-            
-            document.getElementById('managementSection').style.display = 'block';
-            document.getElementById('ticketsManagementSection').style.display = 'block';
-            document.querySelectorAll('.admin-col').forEach(el => el.style.display = 'table-cell');
-            document.querySelectorAll('.admin-col-tickets').forEach(el => el.style.display = 'table-cell');
-            
-            renderTable();
-            renderTicketsTable();
-        } else {
-            error.style.display = 'block';
-        }
-    }
-
-    function cerrarSesion() {
-        isAdmin = false;
-        document.getElementById('btnLoginSide').style.display = 'block';
-        document.getElementById('btnLogoutSide').style.display = 'none';
-        document.getElementById('sessionStatusText').innerText = translations[currentLang].publicStatus;
-        document.getElementById('sessionStatusText').style.color = "#94a3b8";
-        
-        document.getElementById('managementSection').style.display = 'none';
-        document.getElementById('ticketsManagementSection').style.display = 'none';
-        document.querySelectorAll('.admin-col').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.admin-col-tickets').forEach(el => el.style.display = 'none');
-        
-        renderTable();
-        renderTicketsTable();
-    }
-
-    function getFilteredPromos() {
-        return promoData.filter(item => {
-            let matchYear = (activeFilterYear === 'Full year' || item.year === activeFilterYear);
-            let matchMonth = (item.month === activeFilterMonth);
-            let matchSlice = (activeFilterSlice === 'Full month' || item.slice === activeFilterSlice);
-            let matchMarket = (item.market === activeFilterMarket || (activeCompareMarket !== 'Off' && item.market === activeCompareMarket));
-            return matchYear && matchMonth && matchSlice && matchMarket;
-        });
-    }
-
-    function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-        const dataToRender = getFilteredPromos();
-
-        if (dataToRender.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#6b7280; padding: 20px;">No hay promociones que coincidan con los filtros seleccionados.</td></tr>`;
-            return;
-        }
-
-        dataToRender.forEach(item => {
-            const tr = document.createElement('tr');
-            let isRed = item.type === 'Red';
-            let html = `
-                <td><b>${item.name}</b></td>
-                <td>${item.start}</td>
-                <td>${item.end}</td>
-                <td>${item.value}%</td>
-                <td><span style="font-weight:600; color:#2563eb;">${item.market}</span></td>
-                <td><span style="color:${isRed ? '#dc2626' : '#059669'}; font-weight:600;">${isRed ? '● Launched in Month' : '○ Regular'}</span></td>
-            `;
-            if (isAdmin) {
-                html += `
-                    <td class="admin-col">
-                        <button class="btn" style="padding: 2px 6px; font-size:11px; background:#f3f4f6;" onclick="deletePromo(${item.id})">🗑️ Eliminar</button>
-                    </td>
-                `;
-            } else {
-                html += `<td class="admin-col" style="display:none;"></td>`;
-            }
-            tr.innerHTML = html;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function renderTicketsTable() {
-        const tbody = document.getElementById('ticketsTableBody');
-        tbody.innerHTML = '';
-        ticketsData.forEach(ticket => {
-            const tr = document.createElement('tr');
-            let html = `
-                <td><b>${ticket.id}</b></td>
-                <td>${ticket.hotel}</td>
-                <td>${ticket.issue}</td>
-                <td><span style="padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight:600; background: ${ticket.status==='Resuelto'?'#dcfce7':'#fef3c7'}; color:${ticket.status==='Resuelto'?'#166534':'#d97706'}">${ticket.status}</span></td>
-            `;
-            if (isAdmin) {
-                html += `
-                    <td class="admin-col-tickets">
-                        <button class="btn" style="padding: 3px 8px; font-size:11px; background:#e0e7ff; color:#3730a3;" onclick="extendTicket('${ticket.id}')">⏳ Extender</button>
-                        <button class="btn" style="padding: 3px 8px; font-size:11px; background:#fee2e2; color:#991b1b;" onclick="deleteTicket('${ticket.id}')">🗑️</button>
-                    </td>
-                `;
-            } else {
-                html += `<td class="admin-col-tickets" style="display:none;"></td>`;
-            }
-            tr.innerHTML = html;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function addOrUpdatePromo() {
-        if (!isAdmin) return;
-        const name = document.getElementById('promoName').value;
-        const start = document.getElementById('promoStart').value;
-        const end = document.getElementById('promoEnd').value;
-        const value = parseFloat(document.getElementById('promoValue').value);
-        const market = document.getElementById('promoMarket').value;
-        const type = document.getElementById('promoType').value;
-
-        if (!name || !start || !end || isNaN(value)) {
-            alert('Por favor completa todos los campos requeridos de la promoción.');
-            return;
-        }
-
-        const newId = promoData.length > 0 ? Math.max(...promoData.map(p => p.id)) + 1 : 1;
-        promoData.push({ id: newId, name, start, end, value, market, year: activeFilterYear, month: activeFilterMonth, slice: activeFilterSlice, type });
-        clearForm();
-        renderTable();
-    }
-
-    function deletePromo(id) {
-        if (!isAdmin) return;
-        promoData = promoData.filter(p => p.id !== id);
-        renderTable();
-    }
-
-    function clearForm() {
-        document.getElementById('promoName').value = '';
-        document.getElementById('promoStart').value = '';
-        document.getElementById('promoEnd').value = '';
-        document.getElementById('promoValue').value = '';
-    }
-
-    function addOrUpdateTicket() {
-        if (!isAdmin) return;
-        const hotel = document.getElementById('ticketHotelInput').value;
-        const issue = document.getElementById('ticketReasonInput').value;
-        const status = document.getElementById('ticketStatusSelect').value;
-
-        if (!hotel || !issue) {
-            alert('Por favor ingresa el hotel y la incidencia.');
-            return;
-        }
-
-        const newId = 'T-' + (100 + ticketsData.length + 1);
-        ticketsData.push({ id: newId, hotel, issue, status });
-        
-        document.getElementById('ticketHotelInput').value = '';
-        document.getElementById('ticketReasonInput').value = '';
-        renderTicketsTable();
-    }
-
-    function extendTicket(id) {
-        if (!isAdmin) return;
-        const ticket = ticketsData.find(t => t.id === id);
-        if(ticket) {
-            ticket.status = 'Extendido';
-            renderTicketsTable();
-            alert(`El ticket ${id} ha sido extendido exitosamente.`);
-        }
-    }
-
-    function deleteTicket(id) {
-        if (!isAdmin) return;
-        ticketsData = ticketsData.filter(t => t.id !== id);
-        renderTicketsTable();
-    }
-
-    function exportToExcel(type) {
-        let csvContent = "data:text/csv;charset=utf-8,";
-        if (type === 'promos') {
-            const dataToExport = getFilteredPromos();
-            csvContent += "Promocion,Fecha Inicio,Fecha Fin,Descuento,Mercado,Periodo Año,Mes,Corte Slice,Categoria\n";
-            dataToExport.forEach(row => {
-                csvContent += `"${row.name}","${row.start}","${row.end}","${row.value}%","${row.market}","${row.year}","${row.month}","${row.slice}","${row.type}"\n`;
-            });
-        } else {
-            csvContent += "ID Ticket,Hotel,Incidencia,Estatus\n";
-            ticketsData.forEach(row => {
-                csvContent += `"${row.id}","${row.hotel}","${row.issue}","${row.status}"\n`;
-            });
-        }
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `reporte_${type}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    function exportToPdf(type) {
-        const printWindow = window.open('', '_blank');
-        let htmlContent = `<html><head><title>Reporte Wyndham - ${type.toUpperCase()}</title><style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #ddd;padding:8px;font-size:12px;text-align:left;}th{background:#0f172a;color:white;}</style></head><body>`;
-        htmlContent += `<h2>Aimbridge LATAM — Reporte de ${type === 'promos' ? 'Promociones (Discount Pace)' : 'Tickets Operativos'}</h2>`;
-        htmlContent += `<p>Filtros activos: ${activeFilterYear} | Mes: ${activeFilterMonth} | Slice: ${activeFilterSlice} | Mercado: ${activeFilterMarket}</p>`;
-        htmlContent += `<p>Fecha de emisión: ${new Date().toLocaleDateString()}</p><table>`;
-        
-        if (type === 'promos') {
-            const dataToExport = getFilteredPromos();
-            htmlContent += `<tr><th>Promo</th><th>Inicio</th><th>Fin</th><th>Descuento</th><th>Mercado</th><th>Categoría</th></tr>`;
-            dataToExport.forEach(p => {
-                htmlContent += `<tr><td>${p.name}</td><td>${p.start}</td><td>${p.end}</td><td>${p.value}%</td><td>${p.market}</td><td>${p.type}</td></tr>`;
-            });
-        } else {
-            htmlContent += `<tr><th>ID</th><th>Hotel</th><th>Incidencia</th><th>Estatus</th></tr>`;
-            ticketsData.forEach(t => {
-                htmlContent += `<tr><td>${t.id}</td><td>${t.hotel}</td><td>${t.issue}</td><td>${t.status}</td></tr>`;
-            });
-        }
-        htmlContent += `</table></body></html>`;
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => printWindow.print(), 500);
-    }
+/* ---------------- init ---------------- */
+renderPromos(promos);
+renderTickets(tickets);
+renderPeriodRows();
+renderTierTrack();
+renderBenchmark();
+selectTier('BLUE');
 </script>
-
 </body>
 </html>
