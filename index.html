@@ -305,6 +305,7 @@
     <h2 id="chart-title" style="font-size:18px;margin:0 0 3px;color:var(--ink);font-family:'Fraunces',serif;"></h2>
     <p id="chart-sub" class="subtext" style="margin:0 0 14px;"></p>
     <div class="chart-legend"><span><span class="dot" style="background:var(--ink);"></span>Descuento por periodo</span></div>
+    <p class="subtext" style="margin:0 0 10px;">Pasa el cursor sobre un punto para ver el % y las fechas exactas del tramo.</p>
     <div id="chart-svg-wrap" style="overflow-x:auto;"></div>
   </div>
 </div>
@@ -480,15 +481,20 @@
               </div>
               <div>
                 <label class="field-label">Estado</label>
-                <select id="new-p-status" class="field">
+                <select id="new-p-status" class="field" onchange="cancelAutoStatusOverride()">
                   <option value="Activa">Activa</option>
                   <option value="Programada">Programada</option>
                   <option value="Finalizada">Finalizada</option>
                 </select>
+                <p class="subtext" id="status-auto-note" style="margin-top:5px;"></p>
               </div>
               <div>
-                <label class="field-label">Booking window (BW)</label>
-                <input type="text" id="new-p-bw" class="field" placeholder="Ej. 14 jul – 15 ago 2026">
+                <label class="field-label">Inicio de reserva (BW)</label>
+                <input type="date" id="new-p-bw-start" class="field" onchange="recalcAutoStatus()">
+              </div>
+              <div>
+                <label class="field-label">Fin de reserva (BW)</label>
+                <input type="date" id="new-p-bw-end" class="field" onchange="recalcAutoStatus()">
               </div>
               <div style="grid-column:span 2;">
                 <label class="field-label">Travel window (TW)</label>
@@ -653,8 +659,8 @@ const STORE_KEY_PROMOS = 'wa_hub_promos_v1';
 const STORE_KEY_TICKETS = 'wa_hub_tickets_v1';
 
 const seedPromos = [
-  { id:"PR-1001", hotel:"Wyndham Alltra Punta Cana", name:"Early Bird Caribbean", partner:"Directo", rateplan:"EBCAR", market:"USA", discount:20, status:"Activa", bw:"1 mar – 31 may 2026", tw:"1 jun – 31 ago 2026", createdAt:"2026-05-12" },
-  { id:"PR-1002", hotel:"Wyndham Alltra Samana", name:"Flash Sale Tropical", partner:"Directo", rateplan:"FSTROP", market:"ONLINE", discount:25, status:"Programada", bw:"1 sep – 30 sep 2026", tw:"1 oct – 15 dic 2026", createdAt:"2026-08-01" }
+  { id:"PR-1001", hotel:"Wyndham Alltra Punta Cana", name:"Early Bird Caribbean", partner:"Directo", rateplan:"EBCAR", market:"USA", discount:20, status:"Activa", bwStart:"2026-03-01", bwEnd:"2026-05-31", tw:"1 jun – 31 ago 2026", createdAt:"2026-05-12" },
+  { id:"PR-1002", hotel:"Wyndham Alltra Samana", name:"Flash Sale Tropical", partner:"Directo", rateplan:"FSTROP", market:"ONLINE", discount:25, status:"Activa", bwStart:"2026-09-01", bwEnd:"2026-09-30", tw:"1 oct – 15 dic 2026", createdAt:"2026-08-01" }
 ];
 const seedTickets = [
   { id:"WY-1001", prop:"Wyndham Alltra Punta Cana", cat:"Paridades", priority:"Alta", state:"Abierto", assigned:"Equipo Distribución", deadline:"2026-09-15", createdAt:"2026-09-08" },
@@ -773,13 +779,54 @@ function nextId(list, prefix){
 function today(){ return new Date().toISOString().slice(0,10); }
 function csvEscape(v){ const s=String(v??''); return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; }
 
+/* ---------------- auto status from BW dates ---------------- */
+let statusManualOverride = false;
+function computeStatusFromDates(startISO, endISO){
+  const t = today();
+  if(endISO && t > endISO) return 'Finalizada';
+  if(startISO && t < startISO) return 'Programada';
+  return 'Activa';
+}
+function getDisplayStatus(p){
+  if(p.bwStart || p.bwEnd) return computeStatusFromDates(p.bwStart, p.bwEnd);
+  return p.status;
+}
+function recalcAutoStatus(){
+  const s=document.getElementById('new-p-bw-start').value;
+  const e=document.getElementById('new-p-bw-end').value;
+  const note=document.getElementById('status-auto-note');
+  if(!s && !e){ note.innerText=''; return; }
+  statusManualOverride=false;
+  document.getElementById('new-p-status').value = computeStatusFromDates(s,e);
+  note.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles" style="color:var(--teal-dark);"></i> Calculado automáticamente según BW`;
+}
+function cancelAutoStatusOverride(){
+  const s=document.getElementById('new-p-bw-start').value;
+  const e=document.getElementById('new-p-bw-end').value;
+  const note=document.getElementById('status-auto-note');
+  if(!s && !e){ note.innerText=''; return; }
+  statusManualOverride=true;
+  note.innerHTML = `<i class="fa-solid fa-lock"></i> Anulado manualmente — cambia las fechas de BW para recalcular`;
+}
+function fmtDateEs(iso){
+  if(!iso) return '';
+  const d=new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+}
+function fmtRangeEs(start,end){
+  if(!start && !end) return '—';
+  if(start && end) return `${fmtDateEs(start)} – ${fmtDateEs(end)}`;
+  return fmtDateEs(start||end);
+}
+
 /* ---------------- PROMOS ---------------- */
 function renderPromos(data){
   const tbody=document.getElementById('promos-table-body');
   if(!data.length){ tbody.innerHTML=`<tr class="empty-row"><td colspan="8">No hay promociones que coincidan con los filtros.</td></tr>`; return; }
   tbody.innerHTML='';
   data.forEach(p=>{
-    const badge = p.status==='Activa' ? 'badge-teal' : p.status==='Programada' ? 'badge-gold' : 'badge-slate';
+    const displayStatus = getDisplayStatus(p);
+    const badge = displayStatus==='Activa' ? 'badge-teal' : displayStatus==='Programada' ? 'badge-gold' : 'badge-slate';
     const hasPeriods = Array.isArray(p.periods) && p.periods.length>=2;
     const discountCell = hasPeriods
       ? `<div style="font-weight:600;color:var(--teal-dark);">hasta ${p.discount}%</div><div style="font-size:11px;color:var(--text-muted);">${p.periods.length} periodos</div>`
@@ -799,10 +846,10 @@ function renderPromos(data){
         <td class="id-cell">${p.rateplan || '—'}</td>
         <td>${discountCell}</td>
         <td style="color:var(--text-muted);font-size:12px;">
-          <div><span style="color:var(--ink-soft);font-weight:600;">BW</span> ${p.bw || '—'}</div>
+          <div><span style="color:var(--ink-soft);font-weight:600;">BW</span> ${fmtRangeEs(p.bwStart,p.bwEnd)}</div>
           <div><span style="color:var(--ink-soft);font-weight:600;">TW</span> ${p.tw || '—'}</div>
         </td>
-        <td><span class="badge ${badge}">${p.status}</span></td>
+        <td><span class="badge ${badge}">${displayStatus}</span></td>
         <td class="no-print" style="white-space:nowrap;">
           ${hasPeriods ? `<button class="btn-ghost edit" onclick="openChartModal('${p.id}')" title="Ver gráfica"><i class="fa-solid fa-chart-line"></i></button>` : ''}
           <button class="btn-ghost edit" onclick="startEditPromo('${p.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
@@ -818,7 +865,7 @@ function filterPromos(){
   const q=document.getElementById('filter-search').value.trim().toLowerCase();
   renderPromos(promos.filter(p=>
     (hotel==='Todos'||p.hotel===hotel) &&
-    (status==='Todos'||p.status===status) &&
+    (status==='Todos'||getDisplayStatus(p)===status) &&
     (market==='Todos'||p.market===market) &&
     (!q || [p.name,p.partner,p.rateplan].some(v=>(v||'').toLowerCase().includes(q)))
   ));
@@ -845,7 +892,8 @@ function executeSavePromo(){
     market:document.getElementById('new-p-market').value,
     discount:computedDiscount,
     status:document.getElementById('new-p-status').value,
-    bw:document.getElementById('new-p-bw').value.trim(),
+    bwStart:document.getElementById('new-p-bw-start').value,
+    bwEnd:document.getElementById('new-p-bw-end').value,
     tw:document.getElementById('new-p-tw').value.trim(),
     periods:validPeriods
   };
@@ -871,10 +919,12 @@ function startEditPromo(id){
   document.getElementById('new-p-market').value=p.market||'';
   document.getElementById('new-p-desc').value=p.discount;
   document.getElementById('new-p-status').value=p.status;
-  document.getElementById('new-p-bw').value=p.bw||'';
+  document.getElementById('new-p-bw-start').value=p.bwStart||'';
+  document.getElementById('new-p-bw-end').value=p.bwEnd||'';
   document.getElementById('new-p-tw').value=p.tw||'';
   currentPeriods = Array.isArray(p.periods) ? p.periods.map(r=>({...r})) : [];
   renderPeriodRows();
+  recalcAutoStatus();
   document.getElementById('promo-form-title').innerText=`Editando ${p.id}`;
   document.getElementById('promo-submit-btn').innerText='Guardar cambios';
   document.getElementById('promo-cancel-btn').classList.remove('hidden');
@@ -887,6 +937,8 @@ function cancelPromoEdit(){
   document.getElementById('promo-cancel-btn').classList.add('hidden');
   document.querySelector('#tab-promos form').reset();
   document.getElementById('pdf-extract-summary').classList.add('hidden');
+  document.getElementById('status-auto-note').innerText='';
+  statusManualOverride=false;
   currentPeriods = [];
   renderPeriodRows();
 }
@@ -916,7 +968,7 @@ function closeChartModal(){ document.getElementById('chart-modal').classList.add
 function openChartModal(id){
   const p=promos.find(x=>x.id===id); if(!p || !Array.isArray(p.periods) || p.periods.length<2) return;
   document.getElementById('chart-title').innerText = `${p.name} — descuento por fecha de viaje (TW)`;
-  document.getElementById('chart-sub').innerHTML = `${p.hotel}${p.partner?' · '+p.partner:''}${p.rateplan?' · '+p.rateplan:''}${p.bw?` · <strong>Ventana de reserva (BW):</strong> ${p.bw}`:''}`;
+  document.getElementById('chart-sub').innerHTML = `${p.hotel}${p.partner?' · '+p.partner:''}${p.rateplan?' · '+p.rateplan:''}${(p.bwStart||p.bwEnd)?` · <strong>Ventana de reserva (BW):</strong> ${fmtRangeEs(p.bwStart,p.bwEnd)}`:''}`;
   document.getElementById('chart-svg-wrap').innerHTML = buildDiscountChartSVG(p.periods);
   document.getElementById('chart-modal').classList.remove('hidden');
 }
@@ -956,12 +1008,23 @@ function buildDiscountChartSVG(periods){
     svg += `<line x1="${x(toTime(a.end))}" y1="${y(a.discount)}" x2="${x(toTime(b.start))}" y2="${y(b.discount)}" stroke="#1C6F67" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.55"/>`;
   }
   // segments + dots
-  sorted.forEach(r=>{
+  sorted.forEach((r,idx)=>{
     const x1=x(toTime(r.start)), x2=x(toTime(r.end)), yy=y(r.discount);
+    const segW = x2-x1;
+    const dateRange = `${fmtDateEs(r.start)} – ${fmtDateEs(r.end)}`;
+    svg += `<g>`;
     svg += `<line x1="${x1}" y1="${yy}" x2="${x2}" y2="${yy}" stroke="#132540" stroke-width="3" stroke-linecap="round"/>`;
-    svg += `<circle cx="${x1}" cy="${yy}" r="4" fill="#132540"/>`;
-    svg += `<circle cx="${x2}" cy="${yy}" r="4" fill="#132540"/>`;
-    svg += `<text x="${(x1+x2)/2}" y="${yy-9}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#132540">${r.discount}%</text>`;
+    svg += `<circle cx="${x1}" cy="${yy}" r="4" fill="#132540"><title>${r.discount}% · ${dateRange}</title></circle>`;
+    svg += `<circle cx="${x2}" cy="${yy}" r="4" fill="#132540"><title>${r.discount}% · ${dateRange}</title></circle>`;
+    // only draw an inline label if the segment is wide enough to not collide with neighbors;
+    // otherwise rely on the hover tooltip on the dots above
+    if(segW >= 26){
+      const above = idx % 2 === 0;
+      const ly = above ? yy-9 : yy+16;
+      svg += `<text x="${(x1+x2)/2}" y="${ly}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#132540">${r.discount}%</text>`;
+    }
+    svg += `<rect x="${x1}" y="${Math.min(yy-14,yy)}" width="${Math.max(segW,1)}" height="${Math.abs(14)+14}" fill="transparent"><title>${r.discount}% · ${dateRange}</title></rect>`;
+    svg += `</g>`;
   });
   svg += `<text x="${M.left+plotW/2}" y="${H+11}" text-anchor="middle" font-size="10" fill="#6E7688" font-weight="600">Fecha de viaje (TW)</text>`;
   svg += `</svg>`;
@@ -997,6 +1060,37 @@ function pdfMatchMarket(raw){
   if(r.includes('online')) return 'ONLINE';
   if(r.includes('ota')) return 'OTA';
   return '';
+}
+const PDF_MONTHS = {january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12};
+function pdfFlexMonthDay(token){
+  const clean = (token||'').replace(/(\d+)(st|nd|rd|th)/gi,'$1').trim();
+  const parts = clean.split(/\s+/).filter(Boolean);
+  let mon=null, day=null;
+  parts.forEach(p=>{
+    const lp=p.toLowerCase();
+    if(PDF_MONTHS[lp]) mon=PDF_MONTHS[lp];
+    else if(/^\d{1,2}$/.test(p)) day=parseInt(p,10);
+  });
+  return (mon && day) ? {mon,day} : null;
+}
+function pdfParseRangeText(raw){
+  if(!raw) return null;
+  const parts = raw.split(/\s+(?:-|–|to|through|until)\s+/i);
+  if(parts.length<2) return null;
+  const left=parts[0].trim(), right=parts.slice(1).join(' ').trim();
+  const yearRe=/\b(\d{4})\b/;
+  const lYear=(left.match(yearRe)||[])[1];
+  const rYear=(right.match(yearRe)||[])[1];
+  const startYear = lYear || rYear;
+  const endYear = rYear || lYear;
+  if(!startYear || !endYear) return null;
+  const leftMD = pdfFlexMonthDay(left.replace(yearRe,'').replace(/,/g,' '));
+  const rightMD = pdfFlexMonthDay(right.replace(yearRe,'').replace(/,/g,' '));
+  if(!leftMD || !rightMD) return null;
+  return {
+    start:`${startYear}-${String(leftMD.mon).padStart(2,'0')}-${String(leftMD.day).padStart(2,'0')}`,
+    end:`${endYear}-${String(rightMD.mon).padStart(2,'0')}-${String(rightMD.day).padStart(2,'0')}`
+  };
 }
 function pdfParseLooseDate(str){
   if(!str) return '';
@@ -1063,6 +1157,7 @@ async function handlePdfFile(file){
     const discount = discountMatch ? discountMatch[1] : '';
     const hotelMatched = pdfMatchHotel(hotelRaw);
     const detectedPeriods = extractPdfPeriods(fullText);
+    const bwParsed = pdfParseRangeText(bw);
 
     const found = [];
     const missing = [];
@@ -1071,7 +1166,7 @@ async function handlePdfFile(file){
     track('Partner', partner);
     track('Mercado', marketMatched || marketRaw);
     track('Promoción', promoName);
-    track('BW', bw);
+    track('BW', bwParsed ? bw : '');
     track('TW', tw);
     track('Rate code', rateCode);
     track('Descuento', discount);
@@ -1085,7 +1180,13 @@ async function handlePdfFile(file){
       if(rateCode) document.getElementById('new-p-rateplan').value = rateCode;
       if(marketMatched) document.getElementById('new-p-market').value = marketMatched;
       if(discount) document.getElementById('new-p-desc').value = discount;
-      if(bw) document.getElementById('new-p-bw').value = bw;
+      if(bwParsed){
+        document.getElementById('new-p-bw-start').value = bwParsed.start;
+        document.getElementById('new-p-bw-end').value = bwParsed.end;
+        recalcAutoStatus();
+      } else if(bw){
+        missing.push('BW (fecha no interpretada, revisa manualmente)');
+      }
       if(tw) document.getElementById('new-p-tw').value = tw;
       if(detectedPeriods.length>=2){
         currentPeriods = detectedPeriods;
@@ -1231,7 +1332,7 @@ function confirmDeleteAction(){
 /* ---------------- export ---------------- */
 function exportCSV(which){
   const rows = which==='promos'
-    ? [['ID','Hotel','Promoción','Mercado','Partner','Rate plan','Descuento %','BW','TW','Estado','Creado'], ...promos.map(p=>[p.id,p.hotel,p.name,marketFull[p.market]||p.market||'',p.partner,p.rateplan,p.discount,p.bw,p.tw,p.status,p.createdAt])]
+    ? [['ID','Hotel','Promoción','Mercado','Partner','Rate plan','Descuento %','BW inicio','BW fin','TW','Estado','Creado'], ...promos.map(p=>[p.id,p.hotel,p.name,marketFull[p.market]||p.market||'',p.partner,p.rateplan,p.discount,p.bwStart,p.bwEnd,p.tw,getDisplayStatus(p),p.createdAt])]
     : [['ID','Propiedad','Categoría','Prioridad','Estado','Asignado','Fecha límite','Creado'], ...tickets.map(t=>[t.id,t.prop,t.cat,t.priority,t.state,t.assigned,t.deadline,t.createdAt])];
   const csv = rows.map(r=>r.map(csvEscape).join(',')).join('\n');
   const blob = new Blob(["\ufeff"+csv], {type:'text/csv;charset=utf-8;'});
