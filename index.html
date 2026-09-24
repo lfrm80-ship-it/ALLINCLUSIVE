@@ -208,6 +208,8 @@
             border-bottom: 2px solid #f1f5f9;
             padding-bottom: 12px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .card-header-actions h3 { margin: 0; color: #0b192c; font-size: 17px; }
 
@@ -236,7 +238,7 @@
         }
 
         /* BOTONES DE ACCIÓN Y DESCARGA */
-        .actions-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .actions-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
         .btn-export {
             padding: 8px 14px;
             font-size: 12px;
@@ -379,9 +381,9 @@
         <!-- USUARIO / LOGIN -->
         <div class="user-auth-box">
             <div id="login-form">
-                <p id="txt-login-header" style="margin: 0 0 8px 0; font-weight: bold; color: #cbd5e1;">Acceso Editor (admin / 1234)</p>
-                <input type="text" id="username" placeholder="Usuario (admin)">
-                <input type="password" id="password" placeholder="Contraseña (1234)">
+                <p id="txt-login-header" style="margin: 0 0 8px 0; font-weight: bold; color: #cbd5e1;">Acceso Editor</p>
+                <input type="text" id="username" placeholder="Usuario">
+                <input type="password" id="password" placeholder="Contraseña">
                 <button class="btn-auth" id="btn-login" onclick="handleLogin()">Ingresar</button>
             </div>
             <div id="user-logged" style="display: none;">
@@ -486,7 +488,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: PROMOCIONES (CON LECTURA DE PDF/EXCEL Y CANALES BW - TW - PARTNER) -->
+        <!-- SECCIÓN 2: PROMOCIONES (CON LECTURA DE PDF/EXCEL, CANALES Y BÚSQUEDA) -->
         <div id="promociones" class="tab-content">
             <h2 id="txt-promos-title">Módulo de Promociones - Canales & Tarifas (BW - TW - Partner)</h2>
             <p id="txt-promos-desc" style="color: #64748b; font-size: 13px; margin-top: -8px; margin-bottom: 20px;">
@@ -507,6 +509,7 @@
                 <div class="card-header-actions">
                     <h3 id="txt-promos-table-title">Promociones Activas por Canal (BW, TW, Partner)</h3>
                     <div class="actions-group">
+                        <input type="text" id="search-promos" onkeyup="filterPromos()" placeholder="🔍 Buscar promoción, código..." style="padding: 6px 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px; width: 200px;">
                         <select id="filter-canal" onchange="filterPromos()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px;">
                             <option value="ALL">Todos los Canales</option>
                             <option value="BW">BW (Brand Website)</option>
@@ -624,7 +627,7 @@
 
     </div>
 
-    <!-- JAVASCRIPT: LÓGICA GENERAL, TRADUCCIONES, REWARDS & LECTOR DE PROMOS -->
+    <!-- JAVASCRIPT: LÓGICA GENERAL, TRADUCCIONES, REWARDS, FILTROS Y LECTOR DE PROMOS -->
     <script>
         const CREDS = { user: "admin", pass: "1234" };
         let currentLang = 'es';
@@ -638,7 +641,7 @@
                 menuPromos: "Promociones",
                 menuRewards: "Wyndham Rewards",
                 menuFormatos: "Formatos y Consultas",
-                loginHeader: "Acceso Editor (admin / 1234)",
+                loginHeader: "Acceso Editor",
                 btnLogin: "Ingresar",
                 loggedLabel: "Sesión activa:",
                 btnLogout: "Cerrar Sesión",
@@ -693,7 +696,7 @@
                 menuPromos: "Promotions",
                 menuRewards: "Wyndham Rewards",
                 menuFormatos: "Forms & Downloads",
-                loginHeader: "Editor Access (admin / 1234)",
+                loginHeader: "Editor Access",
                 btnLogin: "Log In",
                 loggedLabel: "Active session:",
                 btnLogout: "Log Out",
@@ -975,15 +978,22 @@
             }
         }
 
-        // FILTRO DE CANALES PARA PROMOCIONES
+        // FILTRO COMBINADO DE CANALES Y BÚSQUEDA EN TIEMPO REAL
         function filterPromos() {
-            const filter = document.getElementById('filter-canal').value;
+            const channelFilter = document.getElementById('filter-canal').value;
+            const searchQuery = document.getElementById('search-promos').value.toLowerCase();
             const rows = document.querySelectorAll('#promos-tbody tr');
+
             rows.forEach(row => {
                 const badge = row.querySelector('.badge');
                 if (!badge) return;
                 const channelText = badge.innerText.trim();
-                if (filter === 'ALL' || channelText === filter) {
+                const rowText = row.innerText.toLowerCase();
+
+                const matchesChannel = (channelFilter === 'ALL' || channelText === channelFilter);
+                const matchesSearch = (rowText.includes(searchQuery));
+
+                if (matchesChannel && matchesSearch) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
