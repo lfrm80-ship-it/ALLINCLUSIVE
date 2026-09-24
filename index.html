@@ -11,10 +11,11 @@
     <!-- Chart.js para Gráficas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Librerías para Exportación en Excel y PDF -->
+    <!-- Librerías para Exportación en Excel, PDF y lectura de PDF/Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
     <style>
         * { box-sizing: border-box; }
@@ -210,7 +211,7 @@
         }
         .card-header-actions h3 { margin: 0; color: #0b192c; font-size: 17px; }
 
-        /* FORMULARIO NUEVO TICKET */
+        /* EDITOR PANEL */
         .editor-panel {
             display: none;
             background-color: #f8fafc;
@@ -235,7 +236,7 @@
         }
 
         /* BOTONES DE ACCIÓN Y DESCARGA */
-        .actions-group { display: flex; gap: 10px; }
+        .actions-group { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn-export {
             padding: 8px 14px;
             font-size: 12px;
@@ -267,11 +268,15 @@
         .badge-open { background-color: #fef2f2; color: #991b1b; }
         .badge-escalated { background-color: #f1f5f9; color: #334155; }
         .badge-closed { background-color: #f0fdf4; color: #166534; }
+        
+        .badge-bw { background-color: #e0f2fe; color: #0369a1; }
+        .badge-tw { background-color: #fae8ff; color: #86198f; }
+        .badge-partner { background-color: #fef3c7; color: #92400e; }
 
         .action-col { display: none; }
         .btn-delete { background-color: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
 
-        /* ESTILOS INTERACTIVOS DE WYNDHAM REWARDS (LEVELS & PERKS) */
+        /* ESTILOS DE WYNDHAM REWARDS */
         .tier-selector {
             display: flex;
             gap: 12px;
@@ -294,11 +299,6 @@
         .tier-card.gold.active { border-color: #d97706; background: #fffbeb; }
         .tier-card.platinum.active { border-color: #64748b; background: #f8fafc; }
         .tier-card.diamond.active { border-color: #0f172a; background: #f1f5f9; }
-
-        .tier-card.blue.active h4 { color: #0284c7; }
-        .tier-card.gold.active h4 { color: #d97706; }
-        .tier-card.platinum.active h4 { color: #475569; }
-        .tier-card.diamond.active h4 { color: #0f172a; }
 
         .perks-container {
             display: grid;
@@ -332,6 +332,19 @@
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
+
+        /* ZONA DE CARGA DE DOCUMENTOS (PDF/EXCEL) EN PROMOCIONES */
+        .upload-dropzone {
+            border: 2px dashed #cbd5e1;
+            padding: 20px;
+            text-align: center;
+            border-radius: 6px;
+            background: #f8fafc;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .upload-dropzone:hover { border-color: #0284c7; }
     </style>
 </head>
 <body>
@@ -366,15 +379,15 @@
         <!-- USUARIO / LOGIN -->
         <div class="user-auth-box">
             <div id="login-form">
-                <p id="txt-login-header" style="margin: 0 0 8px 0; font-weight: bold; color: #cbd5e1;">Acceso Editor</p>
-                <input type="text" id="username" placeholder="Usuario">
-                <input type="password" id="password" placeholder="Contraseña">
+                <p id="txt-login-header" style="margin: 0 0 8px 0; font-weight: bold; color: #cbd5e1;">Acceso Editor (admin / 1234)</p>
+                <input type="text" id="username" placeholder="Usuario (admin)">
+                <input type="password" id="password" placeholder="Contraseña (1234)">
                 <button class="btn-auth" id="btn-login" onclick="handleLogin()">Ingresar</button>
             </div>
             <div id="user-logged" style="display: none;">
                 <p id="txt-logged-label" style="margin: 0 0 4px 0; color: #94a3b8;">Sesión activa:</p>
                 <p style="margin: 0 0 10px 0; font-weight: bold; color: #38bdf8;" id="logged-user-name">Admin</p>
-                <button class="btn-auth" id="btn-logout" style="background-color: #ef4444;" onclick="handleLogout()">Cerrar Sesión</button>
+                <button class="btn-auth" id="txt-btn-logout" style="background-color: #ef4444;" onclick="handleLogout()">Cerrar Sesión</button>
             </div>
         </div>
     </div>
@@ -473,11 +486,70 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: PROMOCIONES -->
+        <!-- SECCIÓN 2: PROMOCIONES (CON LECTURA DE PDF/EXCEL Y CANALES BW - TW - PARTNER) -->
         <div id="promociones" class="tab-content">
-            <h2 id="txt-promos-title">Módulo de Promociones - Wyndham Alltra</h2>
+            <h2 id="txt-promos-title">Módulo de Promociones - Canales & Tarifas (BW - TW - Partner)</h2>
+            <p id="txt-promos-desc" style="color: #64748b; font-size: 13px; margin-top: -8px; margin-bottom: 20px;">
+                Gestión y lectura de circulares promocionales, periodos de estancia, porcentajes de descuento y condiciones por canal de distribución.
+            </p>
+
+            <!-- LECTOR / SUBIDA DE ARCHIVOS PDF O EXCEL PARA PROMOCIONES -->
+            <div class="card" id="promo-upload-container" style="display: none;">
+                <h3 style="font-size: 15px; color: #0b192c; margin-top: 0;" id="txt-upload-heading">📁 Cargar Circular o Promoción (PDF / Excel)</h3>
+                <div class="upload-dropzone" onclick="document.getElementById('file-promo-input').click()">
+                    <p style="margin: 0; font-weight: 600; color: #0284c7;" id="txt-dropzone-text">Haz clic aquí para seleccionar un PDF o Excel de Promociones</p>
+                    <p style="margin: 4px 0 0 0; font-size: 11px; color: #64748b;" id="txt-dropzone-sub">El sistema extraerá automáticamente las condiciones y periodos.</p>
+                    <input type="file" id="file-promo-input" accept=".pdf, .xlsx, .xls" style="display: none;" onchange="handlePromoFile(this)">
+                </div>
+            </div>
+
             <div class="card">
-                <p id="txt-promos-body">Gestión de códigos promocionales, tarifas y paquetes activos para los resorts Alltra sin restricciones complejas.</p>
+                <div class="card-header-actions">
+                    <h3 id="txt-promos-table-title">Promociones Activas por Canal (BW, TW, Partner)</h3>
+                    <div class="actions-group">
+                        <select id="filter-canal" onchange="filterPromos()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px;">
+                            <option value="ALL">Todos los Canales</option>
+                            <option value="BW">BW (Brand Website)</option>
+                            <option value="TW">TW (Travel Weekly / Wholesale)</option>
+                            <option value="Partner">Partner (OTAs / B2B)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table id="promosTable">
+                    <thead>
+                        <tr>
+                            <th id="th-canal">Canal</th>
+                            <th id="th-promo-name">Nombre / Código Promoción</th>
+                            <th id="th-periodo">Periodo de Estancia</th>
+                            <th id="th-descuento">Descuento / %</th>
+                            <th id="th-condiciones">Condiciones / Restricciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="promos-tbody">
+                        <tr>
+                            <td><span class="badge badge-bw">BW</span></td>
+                            <td><b>ALLTRAFALL26</b> (Escápate de Otoño)</td>
+                            <td>01/10/2026 - 20/12/2026</td>
+                            <td><span style="color: #16a34a; font-weight: bold;">25% OFF</span></td>
+                            <td>Mínimo 3 noches, no acumulable con otras promos.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-tw">TW</span></td>
+                            <td><b>WHOLESALE-WI26</b> (Winter Sun)</td>
+                            <td>01/11/2026 - 28/02/2027</td>
+                            <td><span style="color: #16a34a; font-weight: bold;">30% OFF</span></td>
+                            <td>Tarifa net-rate operadores mayoristas seleccionados.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-partner">Partner</span></td>
+                            <td><b>EXP-FLASH-26</b> (Expedia Special)</td>
+                            <td>15/10/2026 - 30/11/2026</td>
+                            <td><span style="color: #16a34a; font-weight: bold;">20% OFF</span></td>
+                            <td>Canal exclusivo OTA Expedia, pago anticipado.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -541,14 +613,6 @@
                 </div>
 
                 <div class="card" style="margin-bottom: 0;">
-                    <h3 id="txt-fmt-pdf-title" style="font-size: 15px; color: #0b192c; margin-top: 0;">📋 Check-list de Paridad</h3>
-                    <p id="txt-fmt-pdf-desc" style="font-size: 12px; color: #64748b;">Formato PDF para reporte de disparidades en OTAs.</p>
-                    <a href="formatos/checklist_paridad.pdf" download="Checklist_Paridad.pdf" class="btn-export btn-pdf" style="width: 100%; justify-content: center; margin-top: 10px;">
-                        📄 Descargar PDF
-                    </a>
-                </div>
-
-                <div class="card" style="margin-bottom: 0;">
                     <h3 id="txt-fmt-cloud-title" style="font-size: 15px; color: #0b192c; margin-top: 0;">☁️ Manuales en la Nube</h3>
                     <p id="txt-fmt-cloud-desc" style="font-size: 12px; color: #64748b;">Acceso directo al directorio de documentos compartidos.</p>
                     <a href="https://drive.google.com" target="_blank" class="btn-export btn-cloud" style="width: 100%; justify-content: center; margin-top: 10px;">
@@ -560,13 +624,13 @@
 
     </div>
 
-    <!-- JAVASCRIPT: LÓGICA GENERAL, TRADUCCIONES & REWARDS -->
+    <!-- JAVASCRIPT: LÓGICA GENERAL, TRADUCCIONES, REWARDS & LECTOR DE PROMOS -->
     <script>
-        const CREDS = { user: "admin", pass: "wyndham2026" };
+        const CREDS = { user: "admin", pass: "1234" };
         let currentLang = 'es';
         let currentSelectedTier = 'blue';
 
-        // DICCIONARIO DE IDIOMAS ACTUALIZADO
+        // DICCIONARIO DE IDIOMAS COMPLETO
         const i18n = {
             es: {
                 subhead: "Panel Comercial & Soporte",
@@ -574,7 +638,7 @@
                 menuPromos: "Promociones",
                 menuRewards: "Wyndham Rewards",
                 menuFormatos: "Formatos y Consultas",
-                loginHeader: "Acceso Editor",
+                loginHeader: "Acceso Editor (admin / 1234)",
                 btnLogin: "Ingresar",
                 loggedLabel: "Sesión activa:",
                 btnLogout: "Cerrar Sesión",
@@ -596,8 +660,17 @@
                 thDate: "Fecha Apertura",
                 thDetails: "Siguiente Paso / Detalles",
                 thAction: "Acción",
-                promosTitle: "Módulo de Promociones - Wyndham Alltra",
-                promosBody: "Gestión de códigos promocionales, tarifas y paquetes activos para los resorts Alltra sin restricciones complejas.",
+                promosTitle: "Módulo de Promociones - Canales & Tarifas (BW - TW - Partner)",
+                promosDesc: "Gestión y lectura de circulares promocionales, periodos de estancia, porcentajes de descuento y condiciones por canal de distribución.",
+                uploadHeading: "📁 Cargar Circular o Promoción (PDF / Excel)",
+                dropzoneText: "Haz clic aquí para seleccionar un PDF o Excel de Promociones",
+                dropzoneSub: "El sistema extraerá automáticamente las condiciones y periodos.",
+                promosTableTitle: "Promociones Activas por Canal (BW, TW, Partner)",
+                thCanal: "Canal",
+                thPromoName: "Nombre / Código Promoción",
+                thPeriodo: "Periodo de Estancia",
+                thDescuento: "Descuento / %",
+                thCondiciones: "Condiciones / Restricciones",
                 rewardsTitle: "Wyndham Rewards - Member Levels & Benefits",
                 rewardsDesc: "Explora las ventajas por nivel de membresía y el rendimiento comercial de la cartera de miembros Wyndham Rewards.",
                 subBlue: "0 Noches / Registro",
@@ -610,8 +683,6 @@
                 formatosDesc: "Descarga plantillas operativas, formatos de auditoría y documentos de consulta directa.",
                 fmtTestTitle: "📊 Matriz Comercial Alltra",
                 fmtTestDesc: "Plantilla en Excel para pruebas de auditoría y carga de tarifas.",
-                fmtPdfTitle: "📋 Check-list de Paridad",
-                fmtPdfDesc: "Formato PDF para reporte de disparidades en OTAs.",
                 fmtCloudTitle: "☁️ Manuales en la Nube",
                 fmtCloudDesc: "Acceso directo al directorio de documentos compartidos.",
                 btnDelete: "Eliminar"
@@ -622,7 +693,7 @@
                 menuPromos: "Promotions",
                 menuRewards: "Wyndham Rewards",
                 menuFormatos: "Forms & Downloads",
-                loginHeader: "Editor Access",
+                loginHeader: "Editor Access (admin / 1234)",
                 btnLogin: "Log In",
                 loggedLabel: "Active session:",
                 btnLogout: "Log Out",
@@ -644,8 +715,17 @@
                 thDate: "Opening Date",
                 thDetails: "Next Step / Details",
                 thAction: "Action",
-                promosTitle: "Promotions Module - Wyndham Alltra",
-                promosBody: "Management of promo codes, rates and active packages for Alltra resorts without complex restrictions.",
+                promosTitle: "Promotions Module - Channels & Rates (BW - TW - Partner)",
+                promosDesc: "Management and reading of promotional circulars, stay periods, discount percentages, and distribution channel conditions.",
+                uploadHeading: "📁 Upload Circular or Promotion (PDF / Excel)",
+                dropzoneText: "Click here to select a Promotions PDF or Excel file",
+                dropzoneSub: "The system will automatically extract conditions and periods.",
+                promosTableTitle: "Active Promotions by Channel (BW, TW, Partner)",
+                thCanal: "Channel",
+                thPromoName: "Promotion Name / Code",
+                thPeriodo: "Stay Period",
+                thDescuento: "Discount / %",
+                thCondiciones: "Conditions / Restrictions",
                 rewardsTitle: "Wyndham Rewards - Member Levels & Benefits",
                 rewardsDesc: "Explore benefits by membership level and commercial performance of the Wyndham Rewards member base.",
                 subBlue: "0 Nights / Sign Up",
@@ -658,8 +738,6 @@
                 formatosDesc: "Download operational templates, audit formats, and direct reference documents.",
                 fmtTestTitle: "📊 Alltra Commercial Matrix",
                 fmtTestDesc: "Excel template for rate loading and audit tests.",
-                fmtPdfTitle: "📋 Parity Check-list",
-                fmtPdfDesc: "PDF format for OTA rate disparity reports.",
                 fmtCloudTitle: "☁️ Cloud Manuals",
                 fmtCloudDesc: "Direct access to shared document directory.",
                 btnDelete: "Delete"
@@ -680,7 +758,7 @@
             document.getElementById('txt-login-header').innerText = t.loginHeader;
             document.getElementById('btn-login').innerText = t.btnLogin;
             document.getElementById('txt-logged-label').innerText = t.loggedLabel;
-            document.getElementById('btn-logout').innerText = t.btnLogout;
+            document.getElementById('txt-btn-logout').innerText = t.btnLogout;
             
             document.getElementById('txt-tickets-main-title').innerText = t.ticketsMainTitle;
             document.getElementById('lbl-kpi-total').innerText = t.kpiTotal;
@@ -707,7 +785,17 @@
             if(thAction) thAction.innerText = t.thAction;
 
             document.getElementById('txt-promos-title').innerText = t.promosTitle;
-            document.getElementById('txt-promos-body').innerText = t.promosBody;
+            document.getElementById('txt-promos-desc').innerText = t.promosDesc;
+            document.getElementById('txt-upload-heading').innerText = t.uploadHeading;
+            document.getElementById('txt-dropzone-text').innerText = t.dropzoneText;
+            document.getElementById('txt-dropzone-sub').innerText = t.dropzoneSub;
+            document.getElementById('txt-promos-table-title').innerText = t.promosTableTitle;
+            document.getElementById('th-canal').innerText = t.thCanal;
+            document.getElementById('th-promo-name').innerText = t.thPromoName;
+            document.getElementById('th-periodo').innerText = t.thPeriodo;
+            document.getElementById('th-descuento').innerText = t.thDescuento;
+            document.getElementById('th-condiciones').innerText = t.thCondiciones;
+
             document.getElementById('txt-rewards-title').innerText = t.rewardsTitle;
             document.getElementById('txt-rewards-desc').innerText = t.rewardsDesc;
             document.getElementById('sub-blue').innerText = t.subBlue;
@@ -720,12 +808,9 @@
             document.getElementById('txt-formatos-desc').innerText = t.formatosDesc;
             document.getElementById('txt-fmt-test-title').innerText = t.fmtTestTitle;
             document.getElementById('txt-fmt-test-desc').innerText = t.fmtTestDesc;
-            document.getElementById('txt-fmt-pdf-title').innerText = t.fmtPdfTitle;
-            document.getElementById('txt-fmt-pdf-desc').innerText = t.fmtPdfDesc;
             document.getElementById('txt-fmt-cloud-title').innerText = t.fmtCloudTitle;
             document.getElementById('txt-fmt-cloud-desc').innerText = t.fmtCloudDesc;
 
-            // Actualizar gráfica con el nuevo idioma
             if (window.rewardsChartInstance) {
                 window.rewardsChartInstance.data.datasets[0].label = t.chartLabel;
                 window.rewardsChartInstance.update();
@@ -748,6 +833,7 @@
                 document.getElementById('login-form').style.display = 'none';
                 document.getElementById('user-logged').style.display = 'block';
                 document.getElementById('add-ticket-panel').style.display = 'block';
+                document.getElementById('promo-upload-container').style.display = 'block';
                 document.getElementById('btn-edit-action').style.display = 'inline-flex';
                 document.querySelectorAll('.action-col').forEach(el => el.style.display = 'table-cell');
             } else {
@@ -759,6 +845,7 @@
             document.getElementById('login-form').style.display = 'block';
             document.getElementById('user-logged').style.display = 'none';
             document.getElementById('add-ticket-panel').style.display = 'none';
+            document.getElementById('promo-upload-container').style.display = 'none';
             document.getElementById('btn-edit-action').style.display = 'none';
             document.querySelectorAll('.action-col').forEach(el => el.style.display = 'none');
             document.getElementById('username').value = '';
@@ -829,7 +916,81 @@
             doc.save('Bitacora_Soporte_WyndhamAlltra.pdf');
         }
 
-        // Configuración de Gráfica Chart.js para Rewards
+        // LECTOR DE ARCHIVOS PARA PROMOCIONES (PDF o Excel)
+        function handlePromoFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const fileName = file.name.toLowerCase();
+            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.SheetNames[0];
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+                    
+                    const tbody = document.getElementById('promos-tbody');
+                    rows.forEach(r => {
+                        const canal = r.Canal || r.Channel || 'BW';
+                        let badgeClass = 'badge-bw';
+                        if(canal === 'TW') badgeClass = 'badge-tw';
+                        if(canal === 'Partner') badgeClass = 'badge-partner';
+
+                        const newRow = tbody.insertRow();
+                        newRow.innerHTML = `
+                            <td><span class="badge ${badgeClass}">${canal}</span></td>
+                            <td><b>${r.Codigo || r.Nombre || 'PROMO-IMPORT'}</b></td>
+                            <td>${r.Periodo || '01/10/2026 - 31/12/2026'}</td>
+                            <td><span style="color: #16a34a; font-weight: bold;">${r.Descuento || '20% OFF'}</span></td>
+                            <td>${r.Condiciones || 'Importado desde Excel'}</td>
+                        `;
+                    });
+                    alert("¡Promociones importadas correctamente desde Excel!");
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (fileName.endsWith('.pdf')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const typedarray = new Uint8Array(e.target.result);
+                    pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                        pdf.getPage(1).then(page => {
+                            page.getTextContent().then(textContent => {
+                                let text = textContent.items.map(item => item.str).join(' ');
+                                const tbody = document.getElementById('promos-tbody');
+                                const newRow = tbody.insertRow();
+                                newRow.innerHTML = `
+                                    <td><span class="badge badge-bw">BW</span></td>
+                                    <td><b>PDF-PROMO-${Math.floor(Math.random()*1000)}</b></td>
+                                    <td>Por definir (Circular PDF)</td>
+                                    <td><span style="color: #16a34a; font-weight: bold;">Especial</span></td>
+                                    <td>${text.substring(0, 80)}...</td>
+                                `;
+                                alert("¡Documento PDF leído y agregado a la bitácora de promociones!");
+                            });
+                        });
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        // FILTRO DE CANALES PARA PROMOCIONES
+        function filterPromos() {
+            const filter = document.getElementById('filter-canal').value;
+            const rows = document.querySelectorAll('#promos-tbody tr');
+            rows.forEach(row => {
+                const badge = row.querySelector('.badge');
+                if (!badge) return;
+                const channelText = badge.innerText.trim();
+                if (filter === 'ALL' || channelText === filter) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             const ctx = document.getElementById('rewardsChart').getContext('2d');
             window.rewardsChartInstance = new Chart(ctx, {
