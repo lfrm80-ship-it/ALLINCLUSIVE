@@ -1,903 +1,159 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Wyndham Alltra - Support & Commercial Hub</title>
-    
-    <!-- LOGO / FAVICON PARA LA PESTAÑA DEL NAVEGADOR -->
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
-
-    <!-- Chart.js para Gráficas -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Librerías para Exportación en Excel y PDF -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f6f9;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 270px;
-            background-color: #0b192c;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            border-right: 1px solid #1e293b;
-        }
-
-        .sidebar-header {
-            padding: 25px 20px 15px 20px;
-            background-color: #070f1e;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-        
-        .brand-logo-container {
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .aimbridge-title {
-            font-family: 'Georgia', serif;
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffffff;
-            letter-spacing: 0.5px;
-            line-height: 1;
-        }
-        .aimbridge-sub {
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 11px;
-            font-weight: 700;
-            color: #d1d5db;
-            letter-spacing: 3.5px;
-            margin-top: 4px;
-            text-transform: uppercase;
-        }
-
-        .hub-title-divider {
-            width: 80%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            margin: 12px auto;
-        }
-
-        .sidebar-header h2 { 
-            margin: 0; 
-            font-size: 16px; 
-            color: #38bdf8; 
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .sidebar-header p { 
-            margin: 4px 0 0 0; 
-            font-size: 11px; 
-            color: #94a3b8; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* SELECTOR DE IDIOMA EN SIDEBAR */
-        .lang-switch-container {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 12px;
-        }
-        .btn-lang {
-            background-color: #1e293b;
-            color: #94a3b8;
-            border: 1px solid #334155;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-lang:hover, .btn-lang.active {
-            background-color: #0284c7;
-            color: white;
-            border-color: #38bdf8;
-        }
-
-        .sidebar-menu { list-style: none; padding: 0; margin: 15px 0; }
-        .sidebar-menu li a {
-            display: block;
-            padding: 14px 20px;
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            border-left: 4px solid transparent;
-            transition: all 0.25s ease;
-        }
-        .sidebar-menu li a:hover, 
-        .sidebar-menu li a.active {
-            background-color: #1e293b;
-            color: #ffffff;
-            border-left-color: #38bdf8;
-        }
-
-        /* AUTH / LOGIN BOX EN SIDEBAR */
-        .user-auth-box {
-            margin-top: auto;
-            padding: 15px;
-            background-color: #070f1e;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            font-size: 12px;
-        }
-        .user-auth-box input {
-            width: 100%;
-            padding: 8px 10px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            border: 1px solid #1e293b;
-            background: #0b192c;
-            color: #fff;
-            font-size: 12px;
-        }
-        .btn-auth {
-            width: 100%;
-            padding: 8px;
-            background-color: #0284c7;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-            transition: background 0.2s;
-        }
-        .btn-auth:hover { background-color: #0369a1; }
-
-        /* MAIN CONTENT */
-        .main-content {
-            flex-grow: 1;
-            padding: 25px;
-            overflow-y: auto;
-        }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* KPIS & CARDS */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .kpi-card {
-            background: white;
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border-left: 5px solid #0b192c;
-        }
-        .kpi-card h4 { margin: 0; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kpi-card .number { font-size: 26px; font-weight: bold; margin: 6px 0 0 0; color: #0b192c; }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .card-header-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 12px;
-            margin-bottom: 15px;
-        }
-        .card-header-actions h3 { margin: 0; color: #0b192c; font-size: 17px; }
-
-        /* FORMULARIO NUEVO TICKET */
-        .editor-panel {
-            display: none;
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        .editor-panel h4 { margin: 0 0 12px 0; color: #0b192c; font-size: 14px; }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .form-grid input, .form-grid select {
-            padding: 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            font-size: 12px;
-            width: 100%;
-        }
-
-        /* BOTONES DE ACCIÓN Y DESCARGA */
-        .actions-group { display: flex; gap: 10px; }
-        .btn-export {
-            padding: 8px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-        .btn-excel { background-color: #16a34a; color: white; }
-        .btn-excel:hover { background-color: #15803d; }
-        .btn-pdf { background-color: #dc2626; color: white; }
-        .btn-pdf:hover { background-color: #b91c1c; }
-        .btn-cloud { background-color: #0284c7; color: white; }
-        .btn-cloud:hover { background-color: #0369a1; }
-        .btn-edit-mode { background-color: #d97706; color: white; display: none; }
-        .btn-add { background-color: #0284c7; color: white; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; }
-
-        /* TABLAS */
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8fafc; color: #0b192c; font-weight: 700; }
-        
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .badge-open { background-color: #fef2f2; color: #991b1b; }
-        .badge-escalated { background-color: #f1f5f9; color: #334155; }
-        .badge-closed { background-color: #f0fdf4; color: #166534; }
-
-        .action-col { display: none; }
-        .btn-delete { background-color: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
-
-        /* ESTILOS INTERACTIVOS DE WYNDHAM REWARDS (LEVELS & PERKS) */
-        .tier-selector {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        .tier-card {
-            flex: 1;
-            padding: 16px;
-            border-radius: 8px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.25s ease;
-        }
-        .tier-card h4 { margin: 0; font-size: 16px; color: #0b192c; }
-        .tier-card p { margin: 4px 0 0 0; font-size: 11px; color: #64748b; font-weight: 600; }
-        
-        .tier-card.blue.active { border-color: #0284c7; background: #f0f9ff; }
-        .tier-card.gold.active { border-color: #d97706; background: #fffbeb; }
-        .tier-card.platinum.active { border-color: #64748b; background: #f8fafc; }
-        .tier-card.diamond.active { border-color: #0f172a; background: #f1f5f9; }
-
-        .tier-card.blue.active h4 { color: #0284c7; }
-        .tier-card.gold.active h4 { color: #d97706; }
-        .tier-card.platinum.active h4 { color: #475569; }
-        .tier-card.diamond.active h4 { color: #0f172a; }
-
-        .perks-container {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-        }
-        .tier-details-box {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border-top: 4px solid #0284c7;
-        }
-        .tier-details-box h3 { margin-top: 0; color: #0b192c; font-size: 18px; }
-        .perk-list { list-style: none; padding: 0; margin: 15px 0 0 0; }
-        .perk-list li {
-            padding: 10px 0;
-            border-bottom: 1px dashed #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            color: #334155;
-        }
-        .perk-list li:last-child { border-bottom: none; }
-        .perk-icon { color: #16a34a; font-weight: bold; }
-
-        .chart-box {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-    </style>
-</head>
-<body>
-
-    <!-- MENÚ LATERAL -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="brand-logo-container">
-                <div class="aimbridge-title">Aimbridge</div>
-                <div class="aimbridge-sub">LATAM</div>
-            </div>
-            
-            <div class="hub-title-divider"></div>
-
-            <h2>Wyndham Alltra</h2>
-            <p id="txt-subhead">Panel Comercial & Soporte</p>
-
-            <!-- SELECTOR DE IDIOMA -->
-            <div class="lang-switch-container">
-                <button class="btn-lang active" id="btn-es" onclick="switchLanguage('es')">ESP</button>
-                <button class="btn-lang" id="btn-en" onclick="switchLanguage('en')">ENG</button>
-            </div>
-        </div>
-
-        <ul class="sidebar-menu">
-            <li><a href="#" id="menu-tickets" class="active" onclick="switchTab(event, 'tickets')">Wyndham Tickets</a></li>
-            <li><a href="#" id="menu-promos" onclick="switchTab(event, 'promociones')">Promociones</a></li>
-            <li><a href="#" id="menu-rewards" onclick="switchTab(event, 'rewards')">Wyndham Rewards</a></li>
-            <li><a href="#" id="menu-formatos" onclick="switchTab(event, 'formatos')">Formatos y Consultas</a></li>
-        </ul>
-
-        <!-- USUARIO / LOGIN -->
-        <div class="user-auth-box">
-            <div id="login-form">
-                <p id="txt-login-header" style="margin: 0 0 8px 0; font-weight: bold; color: #cbd5e1;">Acceso Editor</p>
-                <input type="text" id="username" placeholder="Usuario">
-                <input type="password" id="password" placeholder="Contraseña">
-                <button class="btn-auth" id="btn-login" onclick="handleLogin()">Ingresar</button>
-            </div>
-            <div id="user-logged" style="display: none;">
-                <p id="txt-logged-label" style="margin: 0 0 4px 0; color: #94a3b8;">Sesión activa:</p>
-                <p style="margin: 0 0 10px 0; font-weight: bold; color: #38bdf8;" id="logged-user-name">Admin</p>
-                <button class="btn-auth" id="btn-logout" style="background-color: #ef4444;" onclick="handleLogout()">Cerrar Sesión</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- CONTENIDO PRINCIPAL -->
-    <div class="main-content">
-
-        <!-- SECCIÓN 1: WYNDHAM TICKETS -->
-        <div id="tickets" class="tab-content active">
-            <h2 id="txt-tickets-main-title">Módulo de Tickets de Soporte Wyndham Alltra</h2>
-            
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <h4 id="lbl-kpi-total">Total Tickets</h4>
-                    <div class="number" id="kpi-total">28</div>
-                </div>
-                <div class="kpi-card" style="border-left-color: #ef4444;">
-                    <h4 id="lbl-kpi-open">Abiertos (Open)</h4>
-                    <div class="number" id="kpi-open">4</div>
-                </div>
-                <div class="kpi-card" style="border-left-color: #475569;">
-                    <h4 id="lbl-kpi-escalated">Escalados</h4>
-                    <div class="number" id="kpi-escalated">4</div>
-                </div>
-                <div class="kpi-card" style="border-left-color: #22c55e;">
-                    <h4 id="lbl-kpi-closed">Cerrados</h4>
-                    <div class="number" id="kpi-closed">20</div>
-                </div>
-            </div>
-
-            <!-- PANEL DE ALTA DE NUEVO TICKET -->
-            <div id="add-ticket-panel" class="editor-panel">
-                <h4 id="txt-add-ticket-title">➕ Registrar Nuevo Ticket</h4>
-                <div class="form-grid">
-                    <select id="new-status">
-                        <option value="Open">Open</option>
-                        <option value="Escalated">Escalated</option>
-                        <option value="Closed">Closed</option>
-                    </select>
-                    <input type="text" id="new-ticket" placeholder="Ej. #12220000">
-                    <select id="new-prop">
-                        <option value="Wyndham Alltra Cancun">Wyndham Alltra Cancun</option>
-                        <option value="Wyndham Alltra Playa del Carmen">Wyndham Alltra Playa del Carmen</option>
-                        <option value="Alltra Portfolio">Alltra Portfolio</option>
-                    </select>
-                    <input type="text" id="new-partner" placeholder="Partner / Área">
-                    <input type="text" id="new-date" placeholder="DD/MM/AAAA">
-                    <input type="text" id="new-details" placeholder="Siguiente Paso / Detalle">
-                </div>
-                <button class="btn-add" id="btn-save-ticket" onclick="addNewTicket()">Guardar Ticket</button>
-            </div>
-
-            <div class="card">
-                <div class="card-header-actions">
-                    <h3 id="txt-table-title">Bitácora de Conectividad & Soporte Alltra</h3>
-                    <div class="actions-group">
-                        <button class="btn-export btn-excel" id="btn-export-excel" onclick="exportToExcel()">📊 Exportar Excel</button>
-                        <button class="btn-export btn-pdf" id="btn-export-pdf" onclick="exportToPDF()">📄 Exportar PDF</button>
-                        <button id="btn-edit-action" class="btn-export btn-edit-mode" onclick="enableEditMode()">✏️ Activar Edición Directa</button>
-                    </div>
-                </div>
-
-                <table id="ticketsTable">
-                    <thead>
-                        <tr>
-                            <th id="th-status">Estatus</th>
-                            <th id="th-ticket">Ticket #</th>
-                            <th id="th-prop">Propiedad</th>
-                            <th id="th-partner">Partner / Área</th>
-                            <th id="th-date">Fecha Apertura</th>
-                            <th id="th-details">Siguiente Paso / Detalles</th>
-                            <th class="action-col" id="th-action">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tickets-tbody">
-                        <tr>
-                            <td><span class="badge badge-open">Open</span></td>
-                            <td><b>#12214999</b></td>
-                            <td>Wyndham Alltra Cancun</td>
-                            <td>RFP - Rate plan loading form</td>
-                            <td>13/09/2026</td>
-                            <td>Revisión de carga de tarifario RFP</td>
-                            <td class="action-col"><button class="btn-delete" onclick="deleteRow(this)">Eliminar</button></td>
-                        </tr>
-                        <tr>
-                            <td><span class="badge badge-open">Open</span></td>
-                            <td><b>#12207447</b></td>
-                            <td>Wyndham Alltra Playa del Carmen</td>
-                            <td>Expedia AO Names</td>
-                            <td>09/11/2026</td>
-                            <td>Validación nombres AO Expedia</td>
-                            <td class="action-col"><button class="btn-delete" onclick="deleteRow(this)">Eliminar</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- SECCIÓN 2: PROMOCIONES -->
-        <div id="promociones" class="tab-content">
-            <h2 id="txt-promos-title">Módulo de Promociones - Wyndham Alltra</h2>
-            <div class="card">
-                <p id="txt-promos-body">Gestión de códigos promocionales, tarifas y paquetes activos para los resorts Alltra sin restricciones complejas.</p>
-            </div>
-        </div>
-
-        <!-- SECCIÓN 3: WYNDHAM REWARDS INTERACTIVO -->
-        <div id="rewards" class="tab-content">
-            <h2 id="txt-rewards-title">Wyndham Rewards - Member Levels & Benefits</h2>
-            <p id="txt-rewards-desc" style="color: #64748b; font-size: 13px; margin-top: -8px; margin-bottom: 20px;">
-                Explora las ventajas por nivel de membresía y el rendimiento comercial de la cartera de miembros Wyndham Rewards.
-            </p>
-
-            <div class="tier-selector">
-                <div class="tier-card blue active" onclick="selectTier('blue', this)">
-                    <h4>BLUE</h4>
-                    <p id="sub-blue">0 Noches / Registro</p>
-                </div>
-                <div class="tier-card gold" onclick="selectTier('gold', this)">
-                    <h4>GOLD</h4>
-                    <p id="sub-gold">5 Noches Cualificadas</p>
-                </div>
-                <div class="tier-card platinum" onclick="selectTier('platinum', this)">
-                    <h4>PLATINUM</h4>
-                    <p id="sub-plat">15 Noches Cualificadas</p>
-                </div>
-                <div class="tier-card diamond" onclick="selectTier('diamond', this)">
-                    <h4>DIAMOND</h4>
-                    <p id="sub-diam">40 Noches Cualificadas</p>
-                </div>
-            </div>
-
-            <div class="perks-container">
-                <div class="tier-details-box" id="tier-info-box">
-                    <h3 id="tier-title" style="color: #0284c7;">Nivel BLUE - Beneficios Básicos</h3>
-                    <ul class="perk-list" id="tier-perks-list">
-                        <li><span class="perk-icon">✓</span> 10 puntos por dólar o 1,000 puntos en estadías calificados</li>
-                        <li><span class="perk-icon">✓</span> Wi-Fi gratuito en todas las propiedades All Inclusive</li>
-                        <li><span class="perk-icon">✓</span> Rollover Nights (Noches acumulables para el siguiente año)</li>
-                    </ul>
-                </div>
-
-                <div class="chart-box">
-                    <h3 id="txt-chart-title" style="margin-top:0; font-size:15px; color:#0b192c;">Penetración de Reservas por Nivel de Socio</h3>
-                    <canvas id="rewardsChart" height="130"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECCIÓN 4: FORMATOS Y CONSULTAS -->
-        <div id="formatos" class="tab-content">
-            <h2 id="txt-formatos-title">Centro de Formatos & Descargas</h2>
-            <p id="txt-formatos-desc" style="color: #64748b; font-size: 13px; margin-top: -8px; margin-bottom: 20px;">
-                Descarga plantillas operativas, formatos de auditoría y documentos de consulta directa.
-            </p>
-
-            <div class="kpi-grid">
-                <div class="card" style="margin-bottom: 0;">
-                    <h3 id="txt-fmt-test-title" style="font-size: 15px; color: #0b192c; margin-top: 0;">📊 Matriz Comercial Alltra</h3>
-                    <p id="txt-fmt-test-desc" style="font-size: 12px; color: #64748b;">Plantilla en Excel para pruebas de auditoría y carga de tarifas.</p>
-                    <a href="formatos/test.xlsx" download="Matriz_Comercial_Alltra.xlsx" class="btn-export btn-excel" style="width: 100%; justify-content: center; margin-top: 10px;">
-                        📥 Descargar Excel
-                    </a>
-                </div>
-
-                <div class="card" style="margin-bottom: 0;">
-                    <h3 id="txt-fmt-pdf-title" style="font-size: 15px; color: #0b192c; margin-top: 0;">📋 Check-list de Paridad</h3>
-                    <p id="txt-fmt-pdf-desc" style="font-size: 12px; color: #64748b;">Formato PDF para reporte de disparidades en OTAs.</p>
-                    <a href="formatos/checklist_paridad.pdf" download="Checklist_Paridad.pdf" class="btn-export btn-pdf" style="width: 100%; justify-content: center; margin-top: 10px;">
-                        📄 Descargar PDF
-                    </a>
-                </div>
-
-                <div class="card" style="margin-bottom: 0;">
-                    <h3 id="txt-fmt-cloud-title" style="font-size: 15px; color: #0b192c; margin-top: 0;">☁️ Manuales en la Nube</h3>
-                    <p id="txt-fmt-cloud-desc" style="font-size: 12px; color: #64748b;">Acceso directo al directorio de documentos compartidos.</p>
-                    <a href="https://drive.google.com" target="_blank" class="btn-export btn-cloud" style="width: 100%; justify-content: center; margin-top: 10px;">
-                        🔗 Abrir Carpeta
-                    </a>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- JAVASCRIPT: LÓGICA GENERAL, TRADUCCIONES & REWARDS -->
-    <script>
-        const CREDS = { user: "admin", pass: "wyndham2026" };
-        let currentLang = 'es';
-        let currentSelectedTier = 'blue';
-
-        // DICCIONARIO DE IDIOMAS ACTUALIZADO
-        const i18n = {
-            es: {
-                subhead: "Panel Comercial & Soporte",
-                menuTickets: "Wyndham Tickets",
-                menuPromos: "Promociones",
-                menuRewards: "Wyndham Rewards",
-                menuFormatos: "Formatos y Consultas",
-                loginHeader: "Acceso Editor",
-                btnLogin: "Ingresar",
-                loggedLabel: "Sesión activa:",
-                btnLogout: "Cerrar Sesión",
-                ticketsMainTitle: "Módulo de Tickets de Soporte Wyndham Alltra",
-                kpiTotal: "Total Tickets",
-                kpiOpen: "Abiertos (Open)",
-                kpiEscalated: "Escalados",
-                kpiClosed: "Cerrados",
-                addTicketTitle: "➕ Registrar Nuevo Ticket",
-                btnSaveTicket: "Guardar Ticket",
-                tableTitle: "Bitácora de Conectividad & Soporte Alltra",
-                btnExcel: "📊 Exportar Excel",
-                btnPdf: "📄 Exportar PDF",
-                btnEdit: "✏️ Activar Edición Directa",
-                thStatus: "Estatus",
-                thTicket: "Ticket #",
-                thProp: "Propiedad",
-                thPartner: "Partner / Área",
-                thDate: "Fecha Apertura",
-                thDetails: "Siguiente Paso / Detalles",
-                thAction: "Acción",
-                promosTitle: "Módulo de Promociones - Wyndham Alltra",
-                promosBody: "Gestión de códigos promocionales, tarifas y paquetes activos para los resorts Alltra sin restricciones complejas.",
-                rewardsTitle: "Wyndham Rewards - Member Levels & Benefits",
-                rewardsDesc: "Explora las ventajas por nivel de membresía y el rendimiento comercial de la cartera de miembros Wyndham Rewards.",
-                subBlue: "0 Noches / Registro",
-                subGold: "5 Noches Cualificadas",
-                subPlat: "15 Noches Cualificadas",
-                subDiam: "40 Noches Cualificadas",
-                chartTitle: "Penetración de Reservas por Nivel de Socio",
-                chartLabel: "% Share de Reservas en Resorts Alltra",
-                formatosTitle: "Centro de Formatos & Descargas",
-                formatosDesc: "Descarga plantillas operativas, formatos de auditoría y documentos de consulta directa.",
-                fmtTestTitle: "📊 Matriz Comercial Alltra",
-                fmtTestDesc: "Plantilla en Excel para pruebas de auditoría y carga de tarifas.",
-                fmtPdfTitle: "📋 Check-list de Paridad",
-                fmtPdfDesc: "Formato PDF para reporte de disparidades en OTAs.",
-                fmtCloudTitle: "☁️ Manuales en la Nube",
-                fmtCloudDesc: "Acceso directo al directorio de documentos compartidos.",
-                btnDelete: "Eliminar"
-            },
-            en: {
-                subhead: "Commercial & Support Hub",
-                menuTickets: "Wyndham Tickets",
-                menuPromos: "Promotions",
-                menuRewards: "Wyndham Rewards",
-                menuFormatos: "Forms & Downloads",
-                loginHeader: "Editor Access",
-                btnLogin: "Log In",
-                loggedLabel: "Active session:",
-                btnLogout: "Log Out",
-                ticketsMainTitle: "Wyndham Alltra Support Tickets Module",
-                kpiTotal: "Total Tickets",
-                kpiOpen: "Open Tickets",
-                kpiEscalated: "Escalated",
-                kpiClosed: "Closed",
-                addTicketTitle: "➕ Add New Ticket",
-                btnSaveTicket: "Save Ticket",
-                tableTitle: "Alltra Connectivity & Support Log",
-                btnExcel: "📊 Export Excel",
-                btnPdf: "📄 Export PDF",
-                btnEdit: "✏️ Enable Direct Edit",
-                thStatus: "Status",
-                thTicket: "Ticket #",
-                thProp: "Property",
-                thPartner: "Partner / Area",
-                thDate: "Opening Date",
-                thDetails: "Next Step / Details",
-                thAction: "Action",
-                promosTitle: "Promotions Module - Wyndham Alltra",
-                promosBody: "Management of promo codes, rates and active packages for Alltra resorts without complex restrictions.",
-                rewardsTitle: "Wyndham Rewards - Member Levels & Benefits",
-                rewardsDesc: "Explore benefits by membership level and commercial performance of the Wyndham Rewards member base.",
-                subBlue: "0 Nights / Sign Up",
-                subGold: "5 Qualified Nights",
-                subPlat: "15 Qualified Nights",
-                subDiam: "40 Qualified Nights",
-                chartTitle: "Booking Penetration by Member Tier",
-                chartLabel: "% Share of Bookings in Alltra Resorts",
-                formatosTitle: "Forms & Downloads Center",
-                formatosDesc: "Download operational templates, audit formats, and direct reference documents.",
-                fmtTestTitle: "📊 Alltra Commercial Matrix",
-                fmtTestDesc: "Excel template for rate loading and audit tests.",
-                fmtPdfTitle: "📋 Parity Check-list",
-                fmtPdfDesc: "PDF format for OTA rate disparity reports.",
-                fmtCloudTitle: "☁️ Cloud Manuals",
-                fmtCloudDesc: "Direct access to shared document directory.",
-                btnDelete: "Delete"
-            }
-        };
-
-        function switchLanguage(lang) {
-            currentLang = lang;
-            document.getElementById('btn-es').classList.toggle('active', lang === 'es');
-            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-
-            const t = i18n[lang];
-            document.getElementById('txt-subhead').innerText = t.subhead;
-            document.getElementById('menu-tickets').innerText = t.menuTickets;
-            document.getElementById('menu-promos').innerText = t.menuPromos;
-            document.getElementById('menu-rewards').innerText = t.menuRewards;
-            document.getElementById('menu-formatos').innerText = t.menuFormatos;
-            document.getElementById('txt-login-header').innerText = t.loginHeader;
-            document.getElementById('btn-login').innerText = t.btnLogin;
-            document.getElementById('txt-logged-label').innerText = t.loggedLabel;
-            document.getElementById('btn-logout').innerText = t.btnLogout;
-            
-            document.getElementById('txt-tickets-main-title').innerText = t.ticketsMainTitle;
-            document.getElementById('lbl-kpi-total').innerText = t.kpiTotal;
-            document.getElementById('lbl-kpi-open').innerText = t.kpiOpen;
-            document.getElementById('lbl-kpi-escalated').innerText = t.kpiEscalated;
-            document.getElementById('lbl-kpi-closed').innerText = t.kpiClosed;
-            document.getElementById('txt-add-ticket-title').innerText = t.addTicketTitle;
-            document.getElementById('btn-save-ticket').innerText = t.btnSaveTicket;
-            document.getElementById('txt-table-title').innerText = t.tableTitle;
-            document.getElementById('btn-export-excel').innerText = t.btnExcel;
-            document.getElementById('btn-export-pdf').innerText = t.btnPdf;
-            
-            const btnEditAction = document.getElementById('btn-edit-action');
-            if(btnEditAction) btnEditAction.innerText = t.btnEdit;
-
-            document.getElementById('th-status').innerText = t.thStatus;
-            document.getElementById('th-ticket').innerText = t.thTicket;
-            document.getElementById('th-prop').innerText = t.thProp;
-            document.getElementById('th-partner').innerText = t.thPartner;
-            document.getElementById('th-date').innerText = t.thDate;
-            document.getElementById('th-details').innerText = t.thDetails;
-            
-            const thAction = document.getElementById('th-action');
-            if(thAction) thAction.innerText = t.thAction;
-
-            document.getElementById('txt-promos-title').innerText = t.promosTitle;
-            document.getElementById('txt-promos-body').innerText = t.promosBody;
-            document.getElementById('txt-rewards-title').innerText = t.rewardsTitle;
-            document.getElementById('txt-rewards-desc').innerText = t.rewardsDesc;
-            document.getElementById('sub-blue').innerText = t.subBlue;
-            document.getElementById('sub-gold').innerText = t.subGold;
-            document.getElementById('sub-plat').innerText = t.subPlat;
-            document.getElementById('sub-diam').innerText = t.subDiam;
-            document.getElementById('txt-chart-title').innerText = t.chartTitle;
-
-            document.getElementById('txt-formatos-title').innerText = t.formatosTitle;
-            document.getElementById('txt-formatos-desc').innerText = t.formatosDesc;
-            document.getElementById('txt-fmt-test-title').innerText = t.fmtTestTitle;
-            document.getElementById('txt-fmt-test-desc').innerText = t.fmtTestDesc;
-            document.getElementById('txt-fmt-pdf-title').innerText = t.fmtPdfTitle;
-            document.getElementById('txt-fmt-pdf-desc').innerText = t.fmtPdfDesc;
-            document.getElementById('txt-fmt-cloud-title').innerText = t.fmtCloudTitle;
-            document.getElementById('txt-fmt-cloud-desc').innerText = t.fmtCloudDesc;
-
-            // Actualizar gráfica con el nuevo idioma
-            if (window.rewardsChartInstance) {
-                window.rewardsChartInstance.data.datasets[0].label = t.chartLabel;
-                window.rewardsChartInstance.update();
-            }
-        }
-
-        function switchTab(event, tabId) {
-            event.preventDefault();
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.sidebar-menu a').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
-        function handleLogin() {
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            if(u === CREDS.user && p === CREDS.pass) {
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('user-logged').style.display = 'block';
-                document.getElementById('add-ticket-panel').style.display = 'block';
-                document.getElementById('btn-edit-action').style.display = 'inline-flex';
-                document.querySelectorAll('.action-col').forEach(el => el.style.display = 'table-cell');
-            } else {
-                alert("Credenciales incorrectas / Invalid credentials");
-            }
-        }
-
-        function handleLogout() {
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('user-logged').style.display = 'none';
-            document.getElementById('add-ticket-panel').style.display = 'none';
-            document.getElementById('btn-edit-action').style.display = 'none';
-            document.querySelectorAll('.action-col').forEach(el => el.style.display = 'none');
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-        }
-
-        function addNewTicket() {
-            const status = document.getElementById('new-status').value;
-            const ticket = document.getElementById('new-ticket').value;
-            const prop = document.getElementById('new-prop').value;
-            const partner = document.getElementById('new-partner').value;
-            const date = document.getElementById('new-date').value;
-            const details = document.getElementById('new-details').value;
-
-            if(!ticket || !partner) {
-                alert("Por favor completa al menos el número de ticket y el partner.");
-                return;
-            }
-
-            let badgeClass = 'badge-open';
-            if(status === 'Escalated') badgeClass = 'badge-escalated';
-            if(status === 'Closed') badgeClass = 'badge-closed';
-
-            const tbody = document.getElementById('tickets-tbody');
-            const newRow = tbody.insertRow(0);
-            newRow.innerHTML = `
-                <td><span class="badge ${badgeClass}">${status}</span></td>
-                <td><b>${ticket}</b></td>
-                <td>${prop}</td>
-                <td>${partner}</td>
-                <td>${date}</td>
-                <td>${details}</td>
-                <td class="action-col" style="display: table-cell;"><button class="btn-delete" onclick="deleteRow(this)">Eliminar</button></td>
-            `;
-
-            document.getElementById('new-ticket').value = '';
-            document.getElementById('new-partner').value = '';
-            document.getElementById('new-date').value = '';
-            document.getElementById('new-details').value = '';
-        }
-
-        function deleteRow(btn) {
-            const row = btn.parentNode.parentNode;
-            row.parentNode.removeChild(row);
-        }
-
-        function enableEditMode() {
-            alert("Modo de edición directa en celdas activo. Haz clic sobre cualquier celda de la tabla para modificar su contenido.");
-            const table = document.getElementById('ticketsTable');
-            for (let i = 1; i < table.rows.length; i++) {
-                for (let j = 0; j < table.rows[i].cells.length - 1; j++) {
-                    table.rows[i].cells[j].contentEditable = "true";
-                    table.rows[i].cells[j].style.backgroundColor = "#fffbeb";
-                }
-            }
-        }
-
-        function exportToExcel() {
-            const wb = XLSX.utils.table_to_book(document.getElementById('ticketsTable'), {sheet: "Tickets Alltra"});
-            XLSX.writeFile(wb, 'Bitacora_Soporte_WyndhamAlltra.xlsx');
-        }
-
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text("Bitácora de Conectividad & Soporte - Wyndham Alltra", 14, 15);
-            doc.autoTable({ html: '#ticketsTable', startY: 20 });
-            doc.save('Bitacora_Soporte_WyndhamAlltra.pdf');
-        }
-
-        // Configuración de Gráfica Chart.js para Rewards
-        window.addEventListener('DOMContentLoaded', () => {
-            const ctx = document.getElementById('rewardsChart').getContext('2d');
-            window.rewardsChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Blue', 'Gold', 'Platinum', 'Diamond'],
-                    datasets: [{
-                        label: '% Share de Reservas en Resorts Alltra',
-                        data: [42, 28, 18, 12],
-                        backgroundColor: ['#0284c7', '#d97706', '#64748b', '#0f172a'],
-                        borderRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, max: 60 } }
-                }
-            });
-        });
-
-        function selectTier(tier, element) {
-            document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('active'));
-            element.classList.add('active');
-
-            const titleEl = document.getElementById('tier-title');
-            const listEl = document.getElementById('tier-perks-list');
-
-            if (tier === 'blue') {
-                titleEl.style.color = '#0284c7';
-                titleEl.innerText = currentLang === 'es' ? 'Nivel BLUE - Beneficios Básicos' : 'BLUE Tier - Basic Benefits';
-                listEl.innerHTML = `
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? '10 puntos por dólar o 1,000 puntos en estadías calificados' : '10 points per dollar or 1,000 points on qualified stays'}</li>
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? 'Wi-Fi gratuito en todas las propiedades All Inclusive' : 'Free Wi-Fi across all All Inclusive properties'}</li>
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? 'Rollover Nights (Noches acumulables para el siguiente año)' : 'Rollover Nights for elite qualification'}</li>
-                `;
-            } else if (tier === 'gold') {
-                titleEl.style.color = '#d97706';
-                titleEl.innerText = currentLang === 'es' ? 'Nivel GOLD - Beneficios Preferenciales' : 'GOLD Tier - Preferred Benefits';
-                listEl.innerHTML = `
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? 'Preferred Room Upgrade (Sujeto a disponibilidad)' : 'Preferred Room Upgrade (Subject to availability)'}</li>
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? 'Late Check-out (Hasta 2 horas de cortesía)' : 'Late Check-out (Up to 2 hours courtesy)'}</li>
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? '10% de bonificación de puntos en estancias' : '10% bonus points on stays'}</li>
-                `;
-            } else if (tier === 'platinum') {
-                titleEl.style.color = '#475569';
-                titleEl.innerText = currentLang === 'es' ? 'Nivel PLATINUM - Beneficios Avanzados' : 'PLATINUM Tier - Advanced Benefits';
-                listEl.innerHTML = `
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? 'Early Check-in y Late Check-out garantizados' : 'Guaranteed Early Check-in and Late Check-out'}</li>
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? 'Descuento del 15% en experiencias de spa seleccionadas' : '15% discount on selected spa experiences'}</li>
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? '15% de bonificación de puntos' : '15% points bonus'}</li>
-                `;
-            } else if (tier === 'diamond') {
-                titleEl.style.color = '#0f172a';
-                titleEl.innerText = currentLang === 'es' ? 'Nivel DIAMOND - Beneficios Elite' : 'DIAMOND Tier - Elite Benefits';
-                listEl.innerHTML = `
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? 'Suite Upgrade garantizado (según términos del programa)' : 'Guaranteed Suite Upgrade (per program terms)'}</li>
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? 'Welcome Amenity VIP en la habitación a la llegada' : 'VIP Welcome Amenity upon arrival'}</li>
-                    <li><span class="perk-icon">✓</span> ${currentLang === 'es' ? '20% de bonificación de puntos y atención preferencial' : '20% points bonus and priority assistance'}</li>
-                `;
-            }
-        }
-    </script>
-</body>
-</html>
-
-            doc.save("Wyndham_All_Inclusive_Tickets.pdf");
-        }
-    </script>
-</body>
-</html>
+import streamlit as st
+import db  # Tu módulo de base de datos
+
+st.set_page_config(
+    page_title="Gestión Comercial & Actividades - Aimbridge LATAM",
+    layout="wide",
+)
+
+st.title("🏨 Aimbridge LATAM | Gestión y Operaciones Comerciales")
+
+# Pestañas principales de navegación
+pestana_registro, pestana_consulta = st.tabs(
+    ["📝 Registrar Actividad / Promoción", "🔍 Consulta General"]
+)
+
+# ==========================================
+# PESTAÑA 1: REGISTRO DE ACTIVIDADES
+# ==========================================
+with pestana_registro:
+  st.header("Registro de Nuevas Actividades y Promociones")
+  st.write(
+      "Ingresa los detalles de la promoción o actividad comercial para"
+      " almacenarla en el sistema."
+  )
+
+  with st.form("form_actividad", clear_on_submit=True):
+    col1, col2 = st.columns(2)
+
+    with col1:
+      titulo = st.text_input("Título de la Actividad o Promoción")
+      propiedad = st.selectbox(
+          "Propiedad / Resort",
+          [
+              "Wyndham Alltra Cancun",
+              "Wyndham Alltra Playa del Carmen",
+              "Aimbridge General",
+          ],
+      )
+      categoria = st.selectbox(
+          "Categoría",
+          [
+              "Promoción Comercial",
+              "Tarifas y Restricciones",
+              "Operación / Distribución",
+              "Estrategia de Ventas",
+          ],
+      )
+
+    with col2:
+      fecha_actividad = st.date_input("Fecha de Aplicación / Registro")
+      responsable = st.text_input(
+          "Responsable", value="Luis Rodríguez"
+      )  # Prellenado con tu nombre o rol
+
+    descripcion = st.text_area("Detalles, Condiciones u Observaciones")
+
+    # Botón de guardado
+    enviar = st.form_submit_button(
+        "💾 Guardar en la Base de Datos", use_container_width=True
+    )
+
+    if enviar:
+      if titulo.strip():
+        # Aquí llamas a tu función de base de datos (asegúrate de que db.py tenga una función compatible)
+        try:
+          # Ejemplo de llamada a tu DB:
+          db.crear_promocion(
+              titulo=titulo,
+              propiedad=propiedad,
+              categoria=categoria,
+              fecha=str(fecha_actividad),
+              responsable=responsable,
+              descripcion=descripcion,
+          )
+          st.success(
+              f"¡La actividad '{titulo}' se ha guardado y registrado"
+              " correctamente!"
+          )
+        except Exception as e:
+          # Si tu función de base de datos tiene otros parámetros, ajustala aquí según tu módulo db.py
+          st.error(f"Hubo un error al guardar en la base de datos: {e}")
+      else:
+        st.warning("Por favor, ingresa al menos el título de la actividad.")
+
+# ==========================================
+# PESTAÑA 2: CONSULTA GENERAL Y FILTROS
+# ==========================================
+with pestana_consulta:
+  st.header("📊 Consulta General de Actividades")
+  st.write("Filtra y visualiza el historial de registros almacenados.")
+
+  # Barra de filtros superior
+  col_f1, col_f2 = st.columns(2)
+  with col_f1:
+    filtro_propiedad = st.selectbox(
+        "Filtrar por Propiedad",
+        [
+            "Todas",
+            "Wyndham Alltra Cancun",
+            "Wyndham Alltra Playa del Carmen",
+            "Aimbridge General",
+        ],
+    )
+  with col_f2:
+    busqueda_texto = st.text_input(
+        "Buscar por palabra clave (Título o Descripción)"
+    )
+
+  # Botón o lógica para cargar datos desde la BD
+  try:
+    # Supongamos que tu módulo db tiene una función para obtener registros (ej. db.obtener_promociones())
+    # Si la función no existe, puedes adaptarla al método que uses para extraer los datos de tu BD.
+    registros = (
+        db.obtener_promociones()
+    )  # Asegúrate de usar la función de consulta de tu db.py
+
+    if registros:
+      # Si 'registros' es una lista de diccionarios o un DataFrame de Pandas, puedes filtrarlo visualmente:
+      import pandas as pd
+
+      df = pd.DataFrame(registros)
+
+      # Aplicar filtros si existen en el DataFrame
+      if filtro_propiedad != "Todas" and "propiedad" in df.columns:
+        df = df[df["propiedad"] == filtro_propiedad]
+
+      if busqueda_texto and "titulo" in df.columns:
+        df = df[
+            df["titulo"].str.contains(busqueda_texto, case=False, na=False)
+            | df["descripcion"].str.contains(
+                busqueda_texto, case=False, na=False
+            )
+        ]
+
+      # Mostrar métricas rápidas
+      st.metric(label="Total de registros encontrados", value=len(df))
+
+      # Mostrar tabla interactiva
+      st.dataframe(df, use_container_width=True)
+
+      # Opción de exportación directa a CSV para reportes ejecutivos
+      csv = df.to_csv(index=False).encode("utf-8")
+      st.download_button(
+          label="📥 Descargar Reporte en CSV",
+          data=csv,
+          file_name="reporte_actividades_aimbridge.csv",
+          mime="text/csv",
+      )
+    else:
+      st.info(
+          "No hay registros guardados todavía en la base de datos. Utiliza la"
+          " pestaña de registro para agregar el primero."
+      )
+
+  except Exception as e:
+    st.info(
+        "Configura la función de consulta en tu módulo `db.py` para visualizar"
+        f" los datos aquí. (Detalle técnico: {e})"
+    )
