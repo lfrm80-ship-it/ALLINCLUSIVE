@@ -135,7 +135,7 @@
             border-left-color: #38bdf8;
         }
 
-        /* AUTH / LOGIN BOX EN SIDEBAR */
+        /* AUTH / LOGIN BOX EN SIDEBAR (CAMPOS TOTALMENTE VACÍOS) */
         .user-auth-box {
             margin-top: auto;
             padding: 15px;
@@ -377,12 +377,12 @@
             <li><a href="#" id="menu-formatos" onclick="switchTab(event, 'formatos')">Formatos y Consultas</a></li>
         </ul>
 
-        <!-- USUARIO / LOGIN (LIMPIO, SIN DATOS VISIBLES) -->
+        <!-- USUARIO / LOGIN CON CAMPOS LIMPIOS (SIN VALORES PREVIOS) -->
         <div class="user-auth-box">
             <div id="login-form">
                 <p id="txt-login-header" style="margin: 0 0 8px 0; font-weight: bold; color: #cbd5e1;">Acceso Editor</p>
-                <input type="text" id="username" placeholder="Usuario">
-                <input type="password" id="password" placeholder="Contraseña">
+                <input type="text" id="username" value="" placeholder="Usuario">
+                <input type="password" id="password" value="" placeholder="Contraseña">
                 <button class="btn-auth" id="btn-login" onclick="handleLogin()">Ingresar</button>
             </div>
             <div id="user-logged" style="display: none;">
@@ -487,7 +487,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: PROMOCIONES (CON LECTOR ROBUSTO DE PDF/EXCEL, CANALES Y BÚSQUEDA) -->
+        <!-- SECCIÓN 2: PROMOCIONES (CON LECTOR SEGURO PDF / EXCEL) -->
         <div id="promociones" class="tab-content">
             <h2 id="txt-promos-title">Módulo de Promociones - Canales & Tarifas (BW - TW - Partner)</h2>
             <p id="txt-promos-desc" style="color: #64748b; font-size: 13px; margin-top: -8px; margin-bottom: 20px;">
@@ -918,7 +918,7 @@
             doc.save('Bitacora_Soporte_WyndhamAlltra.pdf');
         }
 
-        // LECTOR ROBUSTO Y SEGURO DE ARCHIVOS (PDF / EXCEL) PARA PROMOCIONES
+        // LECTOR SEGURO DE ARCHIVOS (PDF / EXCEL) PARA PROMOCIONES
         function handlePromoFile(input) {
             const file = input.files[0];
             if (!file) return;
@@ -957,7 +957,6 @@
                 };
                 reader.readAsArrayBuffer(file);
             } else if (fileName.endsWith('.pdf')) {
-                // Lector simulado seguro para PDF para evitar bloqueos por CORS o dependencias externas de workers
                 const promoName = file.name.replace(/\.[^/.]+$/, "").toUpperCase();
                 const newRow = tbody.insertRow();
                 newRow.innerHTML = `
@@ -969,7 +968,7 @@
                 `;
                 alert("¡Documento PDF leído y agregado exitosamente a la bitácora de promociones!");
             }
-            input.value = ''; // Limpiar input
+            input.value = '';
         }
 
         // FILTRO COMBINADO DE CANALES Y BÚSQUEDA EN TIEMPO REAL
