@@ -1,12 +1,4 @@
-from supabase import Client, create_client
-
-# Tu URL de Supabase de tu proyecto AimbridgeApp
-SUPABASE_URL = "https://zskckjfqngqftrydjjem.supabase.co"
-
-# Pega aquí exactamente la llave larga que guardaste en tu Excel (empieza con sb_publish__)
-SUPABASE_KEY = "pega_aqui_tu_llave_completa"
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Cambia .table("actividades") por .table("Actividades") en tus funciones:
 
 
 def crear_promocion(
@@ -20,9 +12,9 @@ def crear_promocion(
       "responsable": responsable,
       "descripcion": descripcion,
   }
-  supabase.table("actividades").insert(data).execute()
+  supabase.table("Actividades").insert(data).execute()  # <--- Con 'A' mayúscula
 
 
 def obtener_promociones():
-  response = supabase.table("actividades").select("*").execute()
+  response = supabase.table("Actividades").select("*").execute()  # <--- Con 'A' mayúscula
   return response.data
