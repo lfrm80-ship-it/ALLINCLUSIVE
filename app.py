@@ -1,11 +1,5 @@
-# En tu archivo app.py, cuando quieras mostrar las actividades registradas:
-from db import obtener_promociones
+Python
+from db import obtener_promociones  # Importas tu función de la nube
 
-# Traemos los datos directamente desde la nube de Supabase
+# Cada vez que alguien entra o recarga, esto va directo a Supabase
 registros = obtener_promociones()
-
-# Si 'registros' trae datos, los muestras en tu tabla o dataframe de Streamlit:
-if registros:
-  st.dataframe(registros)
-else:
-  st.info("No hay actividades registradas todavía.")
